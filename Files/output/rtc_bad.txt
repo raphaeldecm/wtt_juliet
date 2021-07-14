@@ -1,0 +1,8 @@
+[  ERROR   ] --- "1221eda0fixedstring" != "%xfixedstring
+"
+[   LINE   ] --- testers/tester_wtt_CWE134_bad_rtc.c:37: error: Failure!
+[  PASSED  ] 0 test(s).
+[  FAILED  ] 1 test(s), listed below:
+[  FAILED  ] test_juliet_rtc
+
+ 1 FAILED TEST(S)

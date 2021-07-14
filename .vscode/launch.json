@@ -1,0 +1,50 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+
+        {
+            "type": "java",
+            "name": "Debug {Launch}",
+            "request": "launch",
+            "mainClass": "${file}",
+            "args": "/home/raphael/DOCFILES/DoctoralFiles/Juliet/C/testcases/CWE134_Uncontrolled_Format_String/s02/ CWE134_Uncontrolled_Format_String__char_file_fprintf_01.c"
+        },
+        {
+            "type": "java",
+            "name": "Launch Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "Launch Categorization",
+            "request": "launch",
+            "mainClass": "Categorization",
+            "projectName": "wtt_juliet_c3060bc6"
+        },
+        {
+            "type": "java",
+            "name": "Launch CreateTestCasesFT",
+            "request": "launch",
+            "mainClass": "CreateTestCasesFT",
+            "projectName": "wtt_juliet_c3060bc6"
+        },
+        {
+            "type": "java",
+            "name": "Launch CreateTestCasesRTC",
+            "request": "launch",
+            "mainClass": "CreateTestCasesRTC",
+            "projectName": "wtt_juliet_c3060bc6"
+        },
+        {
+            "type": "java",
+            "name": "Launch TestingCWE",
+            "request": "launch",
+            "mainClass": "TestingCWE",
+            "projectName": "wtt_juliet_c3060bc6"
+        }
+    ]
+}
