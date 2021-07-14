@@ -14,14 +14,17 @@ public class Categorization {
     private String pathExp;
     private String folderFiles;
     private String aflLog;
-    private String failedLog;
-    private String categorization;
+    private String failedLog_bad;
+    private String failedLog_good;
+    private String categorization_bad;
+    private String categorization_good;
     private int numberPass;
     private int numberFail;
     private int numberCrash;
 
     public static void main(String[] args) throws Exception {
-        cwe = args[0];
+        cwe = args[0].split("_")[0]; //CWE134_Uncontrolled_Format_String__char_file_fprintf_02.c
+        // System.out.println(cwe);
         Categorization cat = new Categorization();
         cat.start();
     }
@@ -30,20 +33,34 @@ public class Categorization {
         this.pathExp = System.getProperty("user.dir");
         this.pathExp = this.pathExp.replaceAll("/src", "");
         this.folderFiles = "/Files";
-        this.failedLog = "/result.json";
-        this.categorization = "/categorization.log";
+        this.failedLog_bad = "/result_bad.json";
+        this.failedLog_good = "/result_good.json";
+        this.categorization_bad = "/categorization_bad.log";
+        this.categorization_good = "/categorization_good.log";
         this.numberPass = 0;
         this.numberFail = 0;
         this.numberCrash = 0;
     }
 
     private void start() throws Exception {
-        List<String> result = new ArrayList();
-        result = readResult(pathExp, folderFiles, failedLog);
-        recCategorization(result);
+        execGood();
+        execBad();        
     }
     
-    public void recCategorization(List<String> result){
+    
+    public void execGood() throws Exception{
+        List<String> result = new ArrayList();
+        result = readResult(pathExp, folderFiles, failedLog_good);
+        recCategorization(result, categorization_good);
+    }
+    
+    public void execBad() throws Exception{
+        List<String> result = new ArrayList();
+        result = readResult(pathExp, folderFiles, failedLog_bad);
+        recCategorization(result, categorization_bad);
+    }
+
+    public void recCategorization(List<String> result, String categorization){
         
         for (String line : result) {
             if(line.contains("FAILED")){

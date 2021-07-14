@@ -41,6 +41,11 @@ static void test_juliet_ft(void **state)
     
     freopen("/dev/tty", "a", stdout);
     
+    char *pos;
+    if ((pos = strchr(buf, '\n')) != NULL){
+        *pos = '\0';
+    }
+    
     assert_string_equal(buf, name);
 }
 

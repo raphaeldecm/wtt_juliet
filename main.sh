@@ -19,6 +19,8 @@ tester_file_ft_good="tester_wtt_CWE134_good_ft.c"
 tester_file_rtc_bad="tester_wtt_CWE134_bad_rtc.c"
 tester_file_rtc_good="tester_wtt_CWE134_good_rtc.c"
 
+path_catalog="/home/raphael/DOCFILES/DoctoralFiles/WeaknessesTestingTool/wtt_juliet_catalog/"
+
 # tested_file="format_string.c"
 # mocked_function1="apr_vformatter"
 # mocked_function2="buffer_output"
@@ -28,19 +30,25 @@ testcases="/home/raphael/DOCFILES/DoctoralFiles/Juliet/C/testcases/CWE134_Uncont
 filename="CWE134_Uncontrolled_Format_String__char_file_fprintf_02.c"
 
 #### SCRIPTS CALL'S ####
-echo "Construindo casos de teste"
+echo "Proc. 1/7 - Construindo casos de teste"
 ./createTestCases.sh $testcases $filename
 
-echo "Executando casos de teste"
+echo "Proc. 2/7 - Executando casos de teste"
 ./runTestCases.sh $exp_folder $tester_file_rtc_bad $tester_file_rtc_good $include_folder $testers_folder
 
-echo "Executando fuzzing teste"
+echo "Proc. 3/7 - Executando fuzzing teste"
 ./fuzzingTest.sh $exp_folder $tester_file_ft_bad $tester_file_ft_good $include_folder $testers_folder
 
-echo "Executando casos de teste com inputs do AFL"
-#./rtcInputAFL.sh
+echo "Proc. 4/7 - Executando casos de teste com inputs do AFL"
+./rtcInputAFL.sh
 
-echo "Criando categorização"
-#./categorization.sh $cwe
+echo "Proc. 5/7 - Criando categorização"
+./categorization.sh $filename
+
+echo "Proc. 6/7 - Movendo arquivos"
+./catalog.sh $path_catalog $filename
+
+echo "Proc. 7/7 - Limpando Projeto"
+./clear.sh
 
 echo "Processo Finalizado"

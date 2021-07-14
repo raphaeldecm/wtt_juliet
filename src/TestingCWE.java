@@ -6,21 +6,22 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Scanner;
 
 public class TestingCWE {
     private String pathExp;
     private String folderFiles;
-    private String aflLog;
-    private String rtcFile;
-    private String logInput;
-    private String failedLog;
+    private String aflLog_bad;
+    private String aflLog_good;
+    private String rtcFile_bad;
+    private String rtcFile_good;
+    private String logInput_bad;
+    private String logInput_good;
+    private String failedLog_bad;
+    private String failedLog_good;
 
     public static void main(String[] args) throws Exception {
         TestingCWE tc = new TestingCWE();
@@ -31,16 +32,26 @@ public class TestingCWE {
         this.pathExp = System.getProperty("user.dir");
         this.pathExp = this.pathExp.replaceAll("/src", "");
         this.folderFiles = "/Files";
-        this.aflLog = "/log_afl.txt";
-        this.rtcFile = "./fuzz";
-        this.logInput = "/log.txt";
-        this.failedLog = "/result.json";
+        this.aflLog_bad = "/log_afl_bad.txt";
+        this.aflLog_good = "/log_afl_good.txt";
+        this.rtcFile_bad = "./fuzz_bad";
+        this.rtcFile_good = "./fuzz_good";
+        this.logInput_bad = "/log_bad.txt";
+        this.logInput_good = "/log_good.txt";
+        this.failedLog_bad = "/result_bad.json";
+        this.failedLog_good = "/result_good.json";
     }
 
     private void start() throws Exception {
-        List<String> log = new ArrayList();
+        
+        exeGood();
+        exeBad();
 
-        log = readLog(pathExp, folderFiles, aflLog);
+    }
+
+    public void exeGood() throws Exception{
+        List<String> log = new ArrayList();
+        log = readLog(pathExp, folderFiles, aflLog_good);
 
         int id = 0;
 
@@ -49,18 +60,41 @@ public class TestingCWE {
             System.out.println("Processo: " + id + "de " + log.size());
             System.out.println("Input: " + s);
             String input = s;
-            execTestCases(rtcFile, input, pathExp, folderFiles, id, log.size());
+            execTestCases(rtcFile_good, input, pathExp, folderFiles, id, log.size(), logInput_good);
         }
-        filterFailed(pathExp, folderFiles, failedLog, logInput);
+        filterFailed(pathExp, folderFiles, failedLog_good, logInput_good);
         
-        try {
-            File fw = new File(pathExp + folderFiles + "/timeExec.txt");
-            PrintWriter pw = new PrintWriter(new FileOutputStream(fw, true));
-            pw.close();
-        } catch (IOException e) {
-            System.out.println("error: e.printStackTrace()");
-        }
+        // try {
+        //     File fw = new File(pathExp + folderFiles + "/timeExec.txt");
+        //     PrintWriter pw = new PrintWriter(new FileOutputStream(fw, true));
+        //     pw.close();
+        // } catch (IOException e) {
+        //     System.out.println("error: e.printStackTrace()");
+        // }
+    }
 
+    public void exeBad() throws Exception{
+        List<String> log = new ArrayList();
+        log = readLog(pathExp, folderFiles, aflLog_bad);
+
+        int id = 0;
+
+        for (String s : log) {
+            ++id;
+            System.out.println("Processo: " + id + "de " + log.size());
+            System.out.println("Input: " + s);
+            String input = s;
+            execTestCases(rtcFile_bad, input, pathExp, folderFiles, id, log.size(), logInput_bad);
+        }
+        filterFailed(pathExp, folderFiles, failedLog_bad, logInput_bad);
+        
+        // try {
+        //     File fw = new File(pathExp + folderFiles + "/timeExec.txt");
+        //     PrintWriter pw = new PrintWriter(new FileOutputStream(fw, true));
+        //     pw.close();
+        // } catch (IOException e) {
+        //     System.out.println("error: e.printStackTrace()");
+        // }
     }
 
     public void filterFailed(String pathExp, String folderFiles, String failedLog, String logInput)
@@ -125,7 +159,7 @@ public class TestingCWE {
         reader.close();
     }
 
-    public void execTestCases(String fileFuzz, String input, String path, String folder, int id, int size)
+    public void execTestCases(String fileFuzz, String input, String path, String folder, int id, int size, String logInput)
             throws IOException {
         try {
             Process process = Runtime.getRuntime().exec(fileFuzz, null, new File(path + folder));

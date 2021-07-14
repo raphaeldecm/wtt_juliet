@@ -16,7 +16,6 @@ static void test_juliet_rtc(void **state)
     (void)state; //unused variable
 
     char *str = "%xfixedstring";
-    char *strComp = "%xfixedstring\n";
 
     FILE *txtFile;
     txtFile = fopen(LOGFILE, "w");
@@ -34,7 +33,12 @@ static void test_juliet_rtc(void **state)
     
     freopen("/dev/tty", "a", stdout);
     
-    assert_string_equal(buf, strComp);
+    char *pos;
+    if ((pos = strchr(buf, '\n')) != NULL){
+        *pos = '\0';
+    }
+    
+    assert_string_equal(buf, str);
 }
 
 int setup(void **state){

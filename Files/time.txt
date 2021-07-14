@@ -1,3 +1,0 @@
-Runtime Build Test Cases : 0:00:00:0.7087
-Runtime RTC: 0:00:00:0.1006
-Runtime FT: 0:00:00:16.2441
