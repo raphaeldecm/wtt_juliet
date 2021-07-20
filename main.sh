@@ -26,29 +26,50 @@ path_catalog="/home/raphael/DOCFILES/DoctoralFiles/WeaknessesTestingTool/wtt_jul
 # mocked_function2="buffer_output"
 include_folder="/home/raphael/DOCFILES/DoctoralFiles/Juliet/C/testcasesupport"
 
-testcases="/home/raphael/DOCFILES/DoctoralFiles/Juliet/C/testcases/CWE134_Uncontrolled_Format_String/s02/"
-filename="CWE134_Uncontrolled_Format_String__char_file_fprintf_02.c"
+# testcases="/home/raphael/DOCFILES/DoctoralFiles/Juliet/C/testcases/CWE134_Uncontrolled_Format_String/s02/"
+# filename="CWE134_Uncontrolled_Format_String__char_file_fprintf_02.c"
 
-#### SCRIPTS CALL'S ####
-echo "Proc. 1/7 - Construindo casos de teste"
-./createTestCases.sh $testcases $filename
+testcases="/home/raphael/DOCFILES/DoctoralFiles/Juliet/C/testcases/CWE134_Uncontrolled_Format_String/wtt/"
 
-echo "Proc. 2/7 - Executando casos de teste"
-./runTestCases.sh $exp_folder $tester_file_rtc_bad $tester_file_rtc_good $include_folder $testers_folder
+#ls $testcases > fileList.txt
+echo -e '\nLendo diretório [@] -----------------------------------'
+i=0
+while read line
+do
+    array[ $i ]="$line"
+    (( i++ ))
+done < <(ls $testcases )
 
-echo "Proc. 3/7 - Executando fuzzing teste"
-./fuzzingTest.sh $exp_folder $tester_file_ft_bad $tester_file_ft_good $include_folder $testers_folder
+# Using [@]
+echo -e '\nArray -----------------------------------'
+for filename in "${array[@]}"
+do
+    echo -e '\nExecutando -----------------------------------'
+    echo "$filename"
+    
+    #### SCRIPTS CALL'S ####
+    ## Execute Technique Scripts ##
+    echo "Proc. 1/7 - Construindo casos de teste"
+    ./createTestCases.sh $testcases $filename
 
-echo "Proc. 4/7 - Executando casos de teste com inputs do AFL"
-./rtcInputAFL.sh
+    echo "Proc. 2/7 - Executando casos de teste"
+    ./runTestCases.sh $exp_folder $tester_file_rtc_bad $tester_file_rtc_good $include_folder $testers_folder
 
-echo "Proc. 5/7 - Criando categorização"
-./categorization.sh $filename
+    echo "Proc. 3/7 - Executando fuzzing teste"
+    ./fuzzingTest.sh $exp_folder $tester_file_ft_bad $tester_file_ft_good $include_folder $testers_folder
 
-echo "Proc. 6/7 - Movendo arquivos"
-./catalog.sh $path_catalog $filename
+    echo "Proc. 4/7 - Executando casos de teste com inputs do AFL"
+    ./rtcInputAFL.sh
 
-echo "Proc. 7/7 - Limpando Projeto"
-./clear.sh
+    echo "Proc. 5/7 - Criando categorização"
+    ./categorization.sh $filename
+
+    echo "Proc. 6/7 - Movendo arquivos"
+    ./catalog.sh $path_catalog $filename
+
+    echo "Proc. 7/7 - Limpando Projeto"
+    ./clear.sh
+
+done
 
 echo "Processo Finalizado"

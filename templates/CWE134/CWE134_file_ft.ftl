@@ -15,24 +15,32 @@ static void test_juliet_ft(void **state)
 {
     (void)state; //unused variable
 
-    char *name[61];
-    gets(name);
+    char * data;
+    char dataBuffer[100] = "";
+    data = dataBuffer;
+    size_t dataLen = strlen(data);
+    fgets(data+dataLen, (int)(100-dataLen), stdin);
+
+	char *bline;
+    if ((bline = strchr(data, '\n')) != NULL){
+        *bline = '\0';
+    }
 
     FILE *txtFile;
     txtFile = fopen(LOGFILE, "w");
     if (txtFile != NULL){
-        fprintf(txtFile, "%s", name);
+        fprintf(txtFile, "%s", data);
         fclose(txtFile);
     }
 
     FILE *fileAddress;
     fileAddress = fopen("log_afl_${type}.txt", "a");
     if (fileAddress != NULL){
-        fprintf(fileAddress, "%s\n", name);
+        fprintf(fileAddress, "%s\n", data);
         fclose(fileAddress);
     }
 
-    char buf[BUFSIZ];
+    char buf[100];
 
     freopen("/dev/null", "a", stdout);
     setbuf(stdout, buf);
@@ -46,7 +54,7 @@ static void test_juliet_ft(void **state)
         *pos = '\0';
     }
     
-    assert_string_equal(buf, name);
+    assert_string_equal(buf, data);
 }
 
 int setup(void **state){
