@@ -72,4 +72,6 @@ do
 
 done
 
+echo "Final Result ..."
+
 echo "Processo Finalizado"

@@ -39,8 +39,20 @@ echo performance|sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
 #Get time
 res1=$(date +%s.%N)
 
-afl-gcc $testers$tester_bad -I$include -lcmocka -o fuzz_bad
-afl-fuzz -i ./testcases/ -o ./results_bad/ ./fuzz_bad
+{
+    echo "Fuzz Bad: Start"
+    afl-gcc $testers$tester_bad -I$include -lcmocka -o fuzz_bad
+    afl-fuzz -i ./testcases/ -o ./results_bad/ ./fuzz_bad
+    echo "Fuzz Bad: done"
+}&
+echo "Process Listen: start"
+sleep 20
+PID=`ps -eaf | grep 'fuzz_' | grep -v grep | awk '{print $2}'`
+if [[ "" !=  "$PID" ]]; then
+  echo "killing $PID"
+  kill -9 $PID
+fi
+echo "Process Listen: Done"
 
 res2=$(date +%s.%N)
 dt=$(echo "$res2 - $res1" | bc)
@@ -56,8 +68,21 @@ LC_NUMERIC=C printf "%02.4f," $ds >> "./time.csv"
 #Get Time
 res3=$(date +%s.%N)
 
-afl-gcc $testers$tester_good -I$include -lcmocka -o fuzz_good
-afl-fuzz -i ./testcases/ -o ./results_good/ ./fuzz_good
+{
+    echo "Fuzz Bad: Start"
+    afl-gcc $testers$tester_good -I$include -lcmocka -o fuzz_good
+    afl-fuzz -i ./testcases/ -o ./results_good/ ./fuzz_good
+    echo "Fuzz Bad: done"
+}&
+echo "Process Listen: start"
+sleep 20
+PID=`ps -eaf | grep 'fuzz_' | grep -v grep | awk '{print $2}'`
+if [[ "" !=  "$PID" ]]; then
+  echo "killing $PID"
+  kill -9 $PID
+fi
+echo "Process Listen: Done"
+
 
 res4=$(date +%s.%N)
 dt=$(echo "$res4 - $res3" | bc)

@@ -11,9 +11,9 @@ import java.util.List;
 public class Categorization {
 
     private static String cwe;
+    private static String fileName;
     private String pathExp;
     private String folderFiles;
-    private String aflLog;
     private String time;
     private String failedLog_bad;
     private String failedLog_good;
@@ -25,6 +25,7 @@ public class Categorization {
 
     public static void main(String[] args) throws Exception {
         cwe = args[0].split("_")[0]; //CWE134_Uncontrolled_Format_String__char_file_fprintf_02.c
+        fileName = args[0];
         // System.out.println(cwe);
         Categorization cat = new Categorization();
         cat.start();
@@ -69,17 +70,25 @@ public class Categorization {
     public void execGood() throws Exception{
         List<String> result = new ArrayList();
         result = readResult(pathExp, folderFiles, failedLog_good);
-        recCategorization(result, categorization_good);
+        recCategorization(result, categorization_good, 0);
     }
     
     public void execBad() throws Exception{
         List<String> result = new ArrayList();
         result = readResult(pathExp, folderFiles, failedLog_bad);
-        recCategorization(result, categorization_bad);
+        recCategorization(result, categorization_bad, 1);
     }
 
-    public void recCategorization(List<String> result, String categorization){
+    public void recCategorization(List<String> result, String categorization, int i){
         
+        String kind = "";
+
+        if( i == 0){
+            kind = "good";
+        } else {
+            kind = "bad";
+        }
+
         for (String line : result) {
             if(line.contains("FAILED")){
                 numberFail++;
@@ -96,8 +105,8 @@ public class Categorization {
             File fw = new File(pathExp + folderFiles + categorization);
             PrintWriter pw = new PrintWriter(new FileOutputStream(fw, true));
             
-            pw.write("cwe,pass,fail,crash\n");
-            pw.write(cwe + "," + numberPass + "," + numberFail + "," + numberCrash + "\n");
+            pw.write("cwe,file,kind,pass,fail,crash\n");
+            pw.write(cwe + "," + fileName + "," + kind + "," + numberPass + "," + numberFail + "," + numberCrash + "\n");
 
             pw.close();
         } catch (IOException e) {
