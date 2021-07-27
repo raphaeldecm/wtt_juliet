@@ -37,6 +37,6 @@ cd ..
 rm bad_a.out good_a.out fuzz_bad fuzz_good 
 
 # Remove Logs
-rm log_afl_bad.txt log_afl_good.txt log_good.txt log_bad.txt time.txt categorization_bad.log categorization_good.log
+rm log_afl_bad.txt log_afl_good.txt log_good.txt log_bad.txt time.csv categorization_bad.log categorization_good.log
 
 rm result_good.json result_bad.json

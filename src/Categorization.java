@@ -14,6 +14,7 @@ public class Categorization {
     private String pathExp;
     private String folderFiles;
     private String aflLog;
+    private String time;
     private String failedLog_bad;
     private String failedLog_good;
     private String categorization_bad;
@@ -33,6 +34,7 @@ public class Categorization {
         this.pathExp = System.getProperty("user.dir");
         this.pathExp = this.pathExp.replaceAll("/src", "");
         this.folderFiles = "/Files";
+        this.time = "/time.csv";
         this.failedLog_bad = "/result_bad.json";
         this.failedLog_good = "/result_good.json";
         this.categorization_bad = "/categorization_bad.log";
@@ -43,8 +45,24 @@ public class Categorization {
     }
 
     private void start() throws Exception {
+
+        File file = new File(this.pathExp + this.folderFiles + this.time);
+        PrintWriter pw = new PrintWriter(new FileOutputStream(file, true));
+
+        long startTime = System.currentTimeMillis();
+        execBad();
+        long endTime = System.currentTimeMillis();
+        long totalTime = endTime - startTime;
+        pw.write(totalTime+",");
+
+        startTime = System.currentTimeMillis();
         execGood();
-        execBad();        
+        endTime = System.currentTimeMillis();
+        totalTime = endTime - startTime;
+        pw.write(totalTime+"");
+
+        pw.close();
+        
     }
     
     

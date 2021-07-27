@@ -22,4 +22,4 @@ dt3=$(echo "$dt2-3600*$dh" | bc)
 dm=$(echo "$dt3/60" | bc)
 ds=$(echo "$dt3-60*$dm" | bc)
 
-LC_NUMERIC=C printf "Runtime Build Test Cases : %d:%02d:%02d:%02.4f\n" $dd $dh $dm $ds >> "$exp_folder/time.txt"
+LC_NUMERIC=C printf "filename,instrumentation(s),rtc_bad(s),rtc_good(s),ft_bad(s),ft_good(s),afl_input_bad(ms),afl_input_good(ms),cat_bad(ms),cat_good(ms)\n$filename,%02.4f," $ds >> "$exp_folder/time.csv"

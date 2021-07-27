@@ -22,6 +22,7 @@ public class TestingCWE {
     private String logInput_good;
     private String failedLog_bad;
     private String failedLog_good;
+    private String time;
 
     public static void main(String[] args) throws Exception {
         TestingCWE tc = new TestingCWE();
@@ -40,16 +41,30 @@ public class TestingCWE {
         this.logInput_good = "/log_good.txt";
         this.failedLog_bad = "/result_bad.json";
         this.failedLog_good = "/result_good.json";
+        this.time = "/time.csv";
     }
 
     private void start() throws Exception {
-        
-        exeGood();
+        File file = new File(this.pathExp + this.folderFiles + this.time);
+        PrintWriter pw = new PrintWriter(new FileOutputStream(file, true));
+
+        long startTime = System.currentTimeMillis();
         exeBad();
+        long endTime = System.currentTimeMillis();
+        long totalTime = endTime - startTime;
+        pw.write(totalTime+",");
+
+        startTime = System.currentTimeMillis();
+        exeGood();
+        endTime = System.currentTimeMillis();
+        totalTime = endTime - startTime;
+        pw.write(totalTime+",");
+
+        pw.close();
 
     }
 
-    public void exeGood() throws Exception{
+    public void exeGood() throws Exception {
         List<String> log = new ArrayList();
         log = readLog(pathExp, folderFiles, aflLog_good);
 
@@ -63,17 +78,17 @@ public class TestingCWE {
             execTestCases(rtcFile_good, input, pathExp, folderFiles, id, log.size(), logInput_good);
         }
         filterFailed(pathExp, folderFiles, failedLog_good, logInput_good);
-        
+
         // try {
-        //     File fw = new File(pathExp + folderFiles + "/timeExec.txt");
-        //     PrintWriter pw = new PrintWriter(new FileOutputStream(fw, true));
-        //     pw.close();
+        // File fw = new File(pathExp + folderFiles + "/timeExec.txt");
+        // PrintWriter pw = new PrintWriter(new FileOutputStream(fw, true));
+        // pw.close();
         // } catch (IOException e) {
-        //     System.out.println("error: e.printStackTrace()");
+        // System.out.println("error: e.printStackTrace()");
         // }
     }
 
-    public void exeBad() throws Exception{
+    public void exeBad() throws Exception {
         List<String> log = new ArrayList();
         log = readLog(pathExp, folderFiles, aflLog_bad);
 
@@ -87,13 +102,13 @@ public class TestingCWE {
             execTestCases(rtcFile_bad, input, pathExp, folderFiles, id, log.size(), logInput_bad);
         }
         filterFailed(pathExp, folderFiles, failedLog_bad, logInput_bad);
-        
+
         // try {
-        //     File fw = new File(pathExp + folderFiles + "/timeExec.txt");
-        //     PrintWriter pw = new PrintWriter(new FileOutputStream(fw, true));
-        //     pw.close();
+        // File fw = new File(pathExp + folderFiles + "/timeExec.txt");
+        // PrintWriter pw = new PrintWriter(new FileOutputStream(fw, true));
+        // pw.close();
         // } catch (IOException e) {
-        //     System.out.println("error: e.printStackTrace()");
+        // System.out.println("error: e.printStackTrace()");
         // }
     }
 
@@ -159,8 +174,8 @@ public class TestingCWE {
         reader.close();
     }
 
-    public void execTestCases(String fileFuzz, String input, String path, String folder, int id, int size, String logInput)
-            throws IOException {
+    public void execTestCases(String fileFuzz, String input, String path, String folder, int id, int size,
+            String logInput) throws IOException {
         try {
             Process process = Runtime.getRuntime().exec(fileFuzz, null, new File(path + folder));
 
