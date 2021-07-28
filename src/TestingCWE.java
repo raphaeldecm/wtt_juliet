@@ -69,6 +69,8 @@ public class TestingCWE {
         log = readLog(pathExp, folderFiles, aflLog_good);
 
         int id = 0;
+        
+        log.remove(0);
 
         for (String s : log) {
             ++id;
@@ -93,7 +95,9 @@ public class TestingCWE {
         log = readLog(pathExp, folderFiles, aflLog_bad);
 
         int id = 0;
-
+        
+        log.remove(0);
+        
         for (String s : log) {
             ++id;
             System.out.println("Processo: " + id + "de " + log.size());

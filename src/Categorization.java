@@ -70,25 +70,17 @@ public class Categorization {
     public void execGood() throws Exception{
         List<String> result = new ArrayList();
         result = readResult(pathExp, folderFiles, failedLog_good);
-        recCategorization(result, categorization_good, 0);
+        recCategorization(result, categorization_good, "good");
     }
     
     public void execBad() throws Exception{
         List<String> result = new ArrayList();
         result = readResult(pathExp, folderFiles, failedLog_bad);
-        recCategorization(result, categorization_bad, 1);
+        recCategorization(result, categorization_bad, "bad");
     }
 
-    public void recCategorization(List<String> result, String categorization, int i){
+    public void recCategorization(List<String> result, String categorization, String kind){
         
-        String kind = "";
-
-        if( i == 0){
-            kind = "good";
-        } else {
-            kind = "bad";
-        }
-
         for (String line : result) {
             if(line.contains("FAILED")){
                 numberFail++;
@@ -112,10 +104,16 @@ public class Categorization {
         } catch (IOException e) {
             System.out.println("error: e.printStackTrace()");
         }
-        
-        System.out.println("Number of Crash: " + numberCrash);
-        System.out.println("Number of Passed: " + numberPass);
-        System.out.println("Number of Fail: " + numberFail);
+        System.out.println("File: " + fileName);
+        System.out.println("Crash: " + kind);
+        System.out.println("Crash: " + numberCrash);
+        System.out.println("Passed: " + numberPass);
+        System.out.println("Fail: " + numberFail);
+
+        // TEAR DOWN
+        numberCrash = 0;
+        numberFail = 0;
+        numberPass = 0;
 
     }
 
