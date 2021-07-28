@@ -1,0 +1,5 @@
+filename,instrumentation(s),rtc_bad(s),rtc_good(s),ft_bad(s),ft_good(s),afl_input_bad(ms),afl_input_good(ms),cat_bad(ms),cat_good(ms)
+Files_CWE134_Uncontrolled_Format_String__char_file_fprintf_12.c,ERROR!
+CWE134_Uncontrolled_Format_String__char_file_fprintf_03.c,0.7323,0.0542,0.0538,20.0151,20.0152,15309,14250,1116,1167
+CWE134_Uncontrolled_Format_String__char_file_fprintf_04.c,0.7323,0.0542,0.0538,10.0151,10.0152,10309,10250,1016,1067
+CWE134_Uncontrolled_Format_String__char_file_fprintf_12.c,0.7244,0.0524,0.0506,20.0137,20.0139,16755,16281,1546,1579
