@@ -73,5 +73,6 @@ do
 done
 
 echo "Final Result ..."
+./finalCategorization.sh
 
 echo "Processo Finalizado"

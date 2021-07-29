@@ -9,8 +9,8 @@ exp_folder="$dir/Files"
 
 cd $dir
 
-cp -r $exp_folder $path_catalog
+cp -r $exp_folder "$path_catalog/temp"
 
-cd $path_catalog
+cd "$path_catalog/temp"
 
 mv "Files" "Files_"$file_name 

@@ -1,5 +1,4 @@
 filename,instrumentation(s),rtc_bad(s),rtc_good(s),ft_bad(s),ft_good(s),afl_input_bad(ms),afl_input_good(ms),cat_bad(ms),cat_good(ms)
-Files_CWE134_Uncontrolled_Format_String__char_file_fprintf_12.c,ERROR!
-CWE134_Uncontrolled_Format_String__char_file_fprintf_03.c,0.7323,0.0542,0.0538,20.0151,20.0152,15309,14250,1116,1167
-CWE134_Uncontrolled_Format_String__char_file_fprintf_04.c,0.7323,0.0542,0.0538,10.0151,10.0152,10309,10250,1016,1067
-CWE134_Uncontrolled_Format_String__char_file_fprintf_12.c,0.7244,0.0524,0.0506,20.0137,20.0139,16755,16281,1546,1579
+CWE134_Uncontrolled_Format_String__char_file_fprintf_03.c,0.7274,0.0505,0.0500,20.0140,20.0142,21688,15186,2013,1340
+CWE134_Uncontrolled_Format_String__char_file_fprintf_03.c,0.7113,0.0520,0.0501,20.0147,20.0147,17775,14792,1573,1315
+CWE134_Uncontrolled_Format_String__char_file_fprintf_04.c,0.7625,0.0509,0.0502,20.0135,20.0140,17975,14463,1627,1251

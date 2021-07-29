@@ -1,0 +1,7 @@
+cwe,file,kind,rtc,ftCrashes,aflrtc_pass,aflrtc_fail,aflrtc_crash
+CWE134,CWE134_Uncontrolled_Format_String__char_file_fprintf_03.c,bad,FAILED,1,12251,15004,70
+CWE134,CWE134_Uncontrolled_Format_String__char_file_fprintf_03.c,good,PASSED,0,21802,0,0
+CWE134,CWE134_Uncontrolled_Format_String__char_file_fprintf_03.c,bad,FAILED,1,12737,10608,39
+CWE134,CWE134_Uncontrolled_Format_String__char_file_fprintf_03.c,good,PASSED,0,21654,0,0
+CWE134,CWE134_Uncontrolled_Format_String__char_file_fprintf_04.c,bad,FAILED,1,12822,11211,57
+CWE134,CWE134_Uncontrolled_Format_String__char_file_fprintf_04.c,good,PASSED,0,21231,0,0
