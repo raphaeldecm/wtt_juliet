@@ -36,7 +36,7 @@ public class CreateTestCases {
         this.templateDirectory = pathExp + "/templates/";
         this.cweKind = fileName.split("_")[0];
         this.badFunction = fileName.replaceAll("\\.c", "_bad");
-        this.goodFunction = "goodB2G1";
+        this.goodFunction = "goodB2G";
         this.testerName = "tester_wtt_" + cweKind;
     }
 
