@@ -5,8 +5,13 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Categorization {
 
@@ -24,6 +29,11 @@ public class Categorization {
     private String resRTC;
     private String ftRes_bad;
     private String ftRes_good;
+    private String sloc;
+    private String saAll;
+    private String saFilter;
+    private String flawAllFile;
+    private String flawFilterFile;
     private int numberCrashFT;
     private int numberPass;
     private int numberFail;
@@ -54,9 +64,16 @@ public class Categorization {
         this.numberPass = 0;
         this.numberFail = 0;
         this.numberCrash = 0;
+        this.flawAllFile = "/flawfinder_all.txt";
+        this.flawFilterFile = "/flawfinder_filter.txt";
+        this.sloc = "";
+        this.saAll = "";
+        this.saFilter = "";
     }
 
     private void start() throws Exception {
+
+        staticAnalysis();
 
         File file = new File(this.pathExp + this.folderFiles + this.time);
         PrintWriter pw = new PrintWriter(new FileOutputStream(file, true));
@@ -74,6 +91,49 @@ public class Categorization {
         pw.write(totalTime + "");
 
         pw.close();
+
+    }
+
+    public void staticAnalysis() {
+        Pattern findSloc = Pattern.compile("Physical Source Lines of Code");
+        Pattern findHits = Pattern.compile("Hits =");
+
+        Path pathFlawAll = Paths.get(pathExp + folderFiles + flawAllFile);
+        Path pathFlawFilter = Paths.get(pathExp + folderFiles + flawFilterFile);
+
+        List<String> linhasAll = new ArrayList<>();
+        List<String> linhasFilter = new ArrayList<>();
+
+        Matcher m;
+
+        try {
+            linhasAll = Files.readAllLines(pathFlawAll);
+            linhasFilter = Files.readAllLines(pathFlawFilter);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        for (String l : linhasAll) {
+            m = findSloc.matcher(l);
+            if (m.find()) {
+                this.sloc = l.trim().split("=")[1].replaceAll(" ", "");
+            }
+        }
+
+        for (String l : linhasAll) {
+            m = findHits.matcher(l);
+            if (m.find()) {
+                this.saAll = l.trim().split("=")[1].replaceAll(" ", "");
+            }
+        }
+
+        for (String l : linhasFilter) {
+            m = findHits.matcher(l);
+            if (m.find()) {
+                this.saFilter = l.trim().split("=")[1].replaceAll(" ", "");
+            }
+        }
 
     }
 
@@ -117,18 +177,18 @@ public class Categorization {
             File fw = new File(pathExp + folderFiles + categorization);
             PrintWriter pw = new PrintWriter(new FileOutputStream(fw, false));
 
-            pw.write("cwe,file,kind,rtc,ftCrashes,aflrtc_pass,aflrtc_fail,aflrtc_crash\n");
-            pw.write(cwe + "," + fileName + "," + kind + "," + resRTC + "," + numberCrashFT + "," + numberPass + "," + numberFail + ","
-                    + numberCrash + "\n");
+            pw.write("cwe,file,kind,sloc,saAll,saFilter,rtc,ftCrashes,aflrtc_pass,aflrtc_fail,aflrtc_crash\n");
+            pw.write(cwe + "," + fileName + "," + kind + "," + this.sloc + "," + this.saAll + "," + this.saFilter + "," + resRTC + "," + numberCrashFT + "," + numberPass + ","
+                    + numberFail + "," + numberCrash + "\n");
 
             pw.close();
         } catch (IOException e) {
             System.out.println("error: e.printStackTrace()");
         }
-        
+
         System.out.println("cwe,file,kind,rtc,ftCrashes,aflrtc_pass,aflrtc_fail,aflrtc_crash\n");
-        System.out.println(cwe + "," + fileName + "," + kind + "," + resRTC + "," + numberCrashFT + "," + numberPass + "," + numberFail + ","
-                    + numberCrash + "\n");
+        System.out.println(cwe + "," + fileName + "," + kind + "," + this.sloc + "," + this.saAll + "," + this.saFilter + "," + resRTC + "," + numberCrashFT + "," + numberPass
+                + "," + numberFail + "," + numberCrash + "\n");
 
         // TEAR DOWN
         numberCrash = 0;
@@ -185,7 +245,7 @@ public class Categorization {
         File afile[] = file.listFiles();
         int i = 0;
 
-        if(afile.length > 0)
+        if (afile.length > 0)
             numberCrashFT = afile.length - 1;
 
         for (int j = afile.length; i < j; i++) {

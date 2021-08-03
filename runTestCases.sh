@@ -41,6 +41,7 @@ LC_NUMERIC=C printf "%02.4f," $ds >> "./time.csv"
 #Get time
 res3=$(date +%s.%N)
 
+echo "$testers$tester_good -I$include -lcmocka -o good_a.out"
 gcc $testers$tester_good -I$include -lcmocka -o good_a.out 2> output/rtc_good_err.txt
 ./good_a.out  2> output/rtc_good.txt
 

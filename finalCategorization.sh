@@ -27,7 +27,7 @@ if [ -f "$pathResults/$fileTotalCat" ]; then
 else
     echo "$fileTotalCat não existe"
     touch $fileTotalCat
-    echo "cwe,file,kind,rtc,ftCrashes,aflrtc_pass,aflrtc_fail,aflrtc_crash" >> $fileTotalCat
+    echo "cwe,file,kind,sloc,saAll,saFilter,,rtc,ftCrashes,aflrtc_pass,aflrtc_fail,aflrtc_crash" >> $fileTotalCat
     echo "$fileTotalCat criado"
 fi
 
