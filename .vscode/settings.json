@@ -1,5 +1,8 @@
 {
     "java.project.referencedLibraries": [
         "lib/**/*.jar"
-    ]
+    ],
+    "files.associations": {
+        "pthread.h": "c"
+    }
 }

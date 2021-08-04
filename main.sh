@@ -10,16 +10,16 @@ testers_folder="testers/"
 path_catalog="/home/raphael/DOCFILES/DoctoralFiles/WeaknessesTestingTool/wtt_juliet_catalog/"
 
 #### EXPERIMENT CONFIGURATION ####
-tester_file_ft_bad="tester_wtt_CWE134_bad_ft.c"
-tester_file_ft_good="tester_wtt_CWE134_good_ft.c"
-tester_file_rtc_bad="tester_wtt_CWE134_bad_rtc.c"
-tester_file_rtc_good="tester_wtt_CWE134_good_rtc.c"
+tester_file_ft_bad="tester_wtt_CWE369_bad_ft.c"
+tester_file_ft_good="tester_wtt_CWE369_good_ft.c"
+tester_file_rtc_bad="tester_wtt_CWE369_bad_rtc.c"
+tester_file_rtc_good="tester_wtt_CWE369_good_rtc.c"
 
-# mocked_function1="apr_vformatter"
+mocked_function1="fgets"
 # mocked_function2="buffer_output"
 include_folder="/home/raphael/DOCFILES/DoctoralFiles/Juliet/C/testcasesupport"
 
-testcases="/home/raphael/DOCFILES/DoctoralFiles/Juliet/C/testcases/CWE134_Uncontrolled_Format_String/wtt/"
+testcases="/home/raphael/DOCFILES/DoctoralFiles/Juliet/C/testcases/CWE369_Divide_by_Zero/wtt/"
 #testcases="/home/raphael/DOCFILES/DoctoralFiles/Juliet/C/testcases/CWE121_Stack_Based_Buffer_Overflow/wtt/"
 
 echo -e '\nLendo diretório [@] -----------------------------------'
@@ -46,10 +46,10 @@ do
     ./createTestCases.sh $testcases $filename
 
     echo "Proc. 3/8 - Executando casos de teste"
-    ./runTestCases.sh $exp_folder $tester_file_rtc_bad $tester_file_rtc_good $include_folder $testers_folder
+    ./runTestCases.sh $exp_folder $tester_file_rtc_bad $tester_file_rtc_good $include_folder $testers_folder $mocked_function1
 
     echo "Proc. 4/8 - Executando fuzzing teste"
-    ./fuzzingTest.sh $exp_folder $tester_file_ft_bad $tester_file_ft_good $include_folder $testers_folder
+    ./fuzzingTest.sh $exp_folder $tester_file_ft_bad $tester_file_ft_good $include_folder $testers_folder $mocked_function1
 
     echo "Proc. 5/8 - Executando casos de teste com inputs do AFL"
     ./rtcInputAFL.sh

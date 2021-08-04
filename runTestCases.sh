@@ -6,7 +6,7 @@ include="$4"
 testers="$5"
 
 ## Mocked functions
-#mock1="$4"
+mock1="$6"
 #mock2="$5"
 
 if [ -d "$folder/output" ]; then
@@ -23,8 +23,8 @@ echo "$tester_bad $tester_good $include"
 
 #Get time
 res1=$(date +%s.%N)
-
-gcc $testers$tester_bad -I$include -lcmocka -o bad_a.out 2> output/rtc_bad_err.txt
+echo "$testers$tester_bad -I$include -Wl,--wrap=$mock1 -lcmocka -o bad_a.out"
+gcc $testers$tester_bad -I$include -Wl,--wrap=$mock1 -lcmocka -o bad_a.out 2> output/rtc_bad_err.txt
 ./bad_a.out  2> output/rtc_bad.txt
 
 res2=$(date +%s.%N)
@@ -41,8 +41,8 @@ LC_NUMERIC=C printf "%02.4f," $ds >> "./time.csv"
 #Get time
 res3=$(date +%s.%N)
 
-echo "$testers$tester_good -I$include -lcmocka -o good_a.out"
-gcc $testers$tester_good -I$include -lcmocka -o good_a.out 2> output/rtc_good_err.txt
+echo "$testers$tester_good -I$include -Wl,--wrap=$mock1 -lcmocka -o good_a.out"
+gcc $testers$tester_good -I$include -Wl,--wrap=$mock1 -lcmocka -o good_a.out 2> output/rtc_good_err.txt
 ./good_a.out  2> output/rtc_good.txt
 
 

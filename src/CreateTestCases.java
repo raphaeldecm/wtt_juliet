@@ -31,7 +31,7 @@ public class CreateTestCases {
     private String templateDirectory;
     private String cweKind;
     private String testerName;
-    private static final Pattern findGood = Pattern.compile("static void good");
+    private Pattern findFunction;
 
     public static void main(String[] args) throws Exception {
         pathDataSet = args[0];
@@ -46,9 +46,8 @@ public class CreateTestCases {
         this.folderFiles = "/Files";
         this.templateDirectory = pathExp + "/templates/";
         this.cweKind = fileName.split("_")[0];
-        //this.badFunction = fileName.replaceAll("\\.c", "_bad");
-        //this.goodFunction = "goodG2B1";
         this.testerName = "tester_wtt_" + cweKind;
+        this.findFunction = Pattern.compile("void " + cweKind);
     }
 
     private void start() throws Exception {
@@ -61,11 +60,8 @@ public class CreateTestCases {
     }
 
     public void findBadFunction() throws FileNotFoundException {
-        //CWE134_Uncontrolled_Format_String__char_file_fprintf_63_bad
-        //CWE134_Uncontrolled_Format_String__char_file_fprintf_63a.c
-        Pattern findBad = Pattern.compile("void "+cweKind);
 
-        Path path = Paths.get(pathDataSet + fileName); 
+        Path path = Paths.get(pathDataSet + fileName);
         List<String> linhas = new ArrayList<>();
         Matcher m;
 
@@ -75,13 +71,13 @@ public class CreateTestCases {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        
+
         System.out.println(fileName + "********BAD*********");
         for (String l : linhas) {
-            m = findBad.matcher(l);
-            if(m.find()){
-                if(!l.contains("(char")){
-                    if(l.endsWith("_bad()")){
+            m = findFunction.matcher(l);
+            if (m.find()) {
+                if (!l.contains("(char")) {
+                    if (l.endsWith("_bad()")) {
                         badFunction = l.split(" ")[1].replace("()", "");
                         System.out.println("******" + badFunction);
                         break;
@@ -89,14 +85,14 @@ public class CreateTestCases {
                 }
             }
         }
-        
+
     }
-    
+
     // O nome das funções good varia entre os arquivos testados
-    //Nesta versão, criamos casos de teste para uma função good e bad
+    // Nesta versão, criamos casos de teste para uma função good e bad
     public void findGoodFunction() throws FileNotFoundException {
-        
-        Path path = Paths.get(pathDataSet + fileName); 
+
+        Path path = Paths.get(pathDataSet + fileName);
         List<String> linhas = new ArrayList<>();
         Matcher m;
 
@@ -106,19 +102,21 @@ public class CreateTestCases {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        
+
         System.out.println(fileName + "********GOOD*********");
         for (String l : linhas) {
-            m = findGood.matcher(l);
-            if(m.find()){
-                if(!l.contains("(char")){
-                    goodFunction = l.split(" ")[2].replace("()", "");
-                    System.out.println("******" + goodFunction);
-                    break;
+            m = findFunction.matcher(l);
+            if (m.find()) {
+                if (!l.contains("(char")) {
+                    if (l.endsWith("_good()")) {
+                        goodFunction = l.split(" ")[1].replace("()", "");
+                        System.out.println("******" + goodFunction);
+                        break;
+                    }
                 }
             }
         }
-        
+
     }
 
     private void createBadFT() throws IOException, TemplateException {
