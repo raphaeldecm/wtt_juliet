@@ -14,6 +14,7 @@
 char inputBuffer[BUFSIZ];
 
 //Mocked functions
+${mockedFunctions}
 char __wrap_fgets(char *__restrict __s, int __n, FILE *__restrict __stream)
 {
     strcpy(__s, inputBuffer);

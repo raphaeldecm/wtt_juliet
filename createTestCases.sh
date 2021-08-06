@@ -1,5 +1,6 @@
 testcases="$1"
 filename="$2"
+include="$3"
 
 res1=$(date +%s.%N)
 
@@ -8,9 +9,16 @@ dir="$(dirname $BIN_PATH)"
 
 exp_folder="$dir/Files"
 
+if [ -d "$exp_folder/output" ]; then
+echo "Diretorio output já existe" ;
+else
+`mkdir -p $exp_folder/output`;
+echo "Diretorio output criado"
+fi
+
 cd src
 javac -cp ../lib/freemarker.jar CreateTestCases.java
-java -cp .:../lib/freemarker.jar CreateTestCases "$testcases" "$filename"
+java -cp .:../lib/freemarker.jar CreateTestCases "$testcases" "$filename" "$include"
 cd ../
 
 res2=$(date +%s.%N)

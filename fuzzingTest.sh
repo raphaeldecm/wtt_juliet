@@ -6,7 +6,7 @@ include="$4"
 testers="$5"
 
 ## Mocked functions
-mock1="$6"
+#mock1="$6"
 #mock2="$8"
 
 echo "$folder $results $testcases $tested $tester_bad $tester_good $include"
@@ -41,7 +41,7 @@ res1=$(date +%s.%N)
 
 {
     echo "Fuzz Bad: Start"
-    afl-gcc $testers$tester_bad -I$include -Wl,--wrap=$mock1 -lcmocka -o fuzz_bad
+    #afl-gcc $testers$tester_bad -I$include -Wl,--wrap=$mock1 -lcmocka -o fuzz_bad
     afl-fuzz -i ./testcases/ -o ./results_bad/ ./fuzz_bad
     echo "Fuzz Bad: done"
 }&
@@ -70,7 +70,7 @@ res3=$(date +%s.%N)
 
 {
     echo "Fuzz Bad: Start"
-    afl-gcc $testers$tester_good -I$include -Wl,--wrap=$mock1 -lcmocka -o fuzz_good
+    #afl-gcc $testers$tester_good -I$include -Wl,--wrap=$mock1 -lcmocka -o fuzz_good
     afl-fuzz -i ./testcases/ -o ./results_good/ ./fuzz_good
     echo "Fuzz Bad: done"
 }&
