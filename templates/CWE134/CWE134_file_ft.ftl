@@ -10,7 +10,11 @@
 #include "/home/raphael/DOCFILES/DoctoralFiles/Juliet/C/testcasesupport/io.c"
 
 #define LOGFILE "/tmp/file.txt"
-
+int __wrap_globalReturnsTrueOrFalse() 
+{
+    //return (rand() % 2);
+    return 1;
+}
 static void test_juliet_ft(void **state)
 {
     (void)state; //unused variable

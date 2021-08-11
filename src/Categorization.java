@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.LineNumberReader;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,6 +18,7 @@ public class Categorization {
 
     private static String cwe;
     private static String fileName;
+    private static String pathTestedFiles;
     private String pathExp;
     private String folderFiles;
     private String time;
@@ -38,10 +40,13 @@ public class Categorization {
     private int numberPass;
     private int numberFail;
     private int numberCrash;
+    private boolean findWeaknessAll;
+    private boolean findWeaknessFilter;
 
     public static void main(String[] args) throws Exception {
         cwe = args[0].split("_")[0]; // CWE134_Uncontrolled_Format_String__char_file_fprintf_02.c
         fileName = args[0];
+        pathTestedFiles = args[1];
         // System.out.println(cwe);
         Categorization cat = new Categorization();
         cat.start();
@@ -69,6 +74,8 @@ public class Categorization {
         this.sloc = "";
         this.saAll = "";
         this.saFilter = "";
+        this.findWeaknessAll = false;
+        this.findWeaknessFilter = false;
     }
 
     private void start() throws Exception {
@@ -94,15 +101,102 @@ public class Categorization {
 
     }
 
+    public void getFunctionsLine(List<Integer> warningsLinesAll, List<Integer> warningsLinesFilter) throws IOException {
+
+        List<String> fileReaded = new ArrayList<>();
+        List<String> functions = new ArrayList<>();
+        List<Integer> startLines = new ArrayList<>();
+        List<Integer> endLines = new ArrayList<>();
+        String str = "";
+
+        File file = new File(pathExp + folderFiles + "/testedfunctions.log");
+        BufferedReader reader;
+
+        int i = 0;
+        reader = new BufferedReader(new FileReader(file));
+        while (true) {
+            ++i;
+            if (str != null) {
+                if (!functions.contains(str) && str.length() > 0) {
+                    functions.add(str);
+                }
+            } else {
+                break;
+            }
+            str = reader.readLine();
+        }
+
+        File testes = new File(pathTestedFiles + fileName);
+        BufferedReader br;
+        str = "";
+
+        br = new BufferedReader(new FileReader(testes));
+
+        while ((str = br.readLine()) != null) {
+            fileReaded.add(str);
+        }
+
+        for (String string : functions) {
+            int ref = 0;
+            int key = 0;
+
+            for (int j = 1; j < fileReaded.size(); j++) {
+                if (fileReaded.get(j).contains(string) && fileReaded.get(j).endsWith("()")) {
+                    if (!startLines.contains(j + 1))
+                        startLines.add(j + 1);
+                    ref = j + 1;
+                    break;
+                }
+            }
+
+            for (int j = ref; j < fileReaded.size(); j++) {
+
+                if (fileReaded.get(j).equals("{")) {
+                    ++key;
+                }
+                if (fileReaded.get(j).equals("}")) {
+                    --key;
+                }
+                if (key == 0) {
+                    endLines.add(j + 1);
+                    break;
+                }
+            }
+        }
+
+        reader.close();
+        br.close();
+
+        for (Integer integer : warningsLinesAll) {
+            for (int k = 0; k < startLines.size(); k++) {
+                if (integer > startLines.get(k) && integer < endLines.get(k)) {
+                    findWeaknessAll = true;
+                }
+
+            }
+        }
+        for (Integer integer : warningsLinesFilter) {
+            for (int k = 0; k < startLines.size(); k++) {
+                if (integer > startLines.get(k) && integer < endLines.get(k)) {
+                    this.findWeaknessFilter = true;
+                }
+
+            }
+        }
+    }
+
     public void staticAnalysis() {
         Pattern findSloc = Pattern.compile("Physical Source Lines of Code");
         Pattern findHits = Pattern.compile("Hits =");
+        Pattern findWarnings = Pattern.compile(fileName + ":");
 
         Path pathFlawAll = Paths.get(pathExp + folderFiles + flawAllFile);
         Path pathFlawFilter = Paths.get(pathExp + folderFiles + flawFilterFile);
 
         List<String> linhasAll = new ArrayList<>();
         List<String> linhasFilter = new ArrayList<>();
+        List<Integer> warningsLinesAll = new ArrayList<>();
+        List<Integer> warningsLinesFilters = new ArrayList<>();
 
         Matcher m;
 
@@ -112,6 +206,20 @@ public class Categorization {
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+        }
+
+        for (String l : linhasAll) {
+            m = findWarnings.matcher(l);
+            if (m.find()) {
+                warningsLinesAll.add(Integer.parseInt(l.trim().split("\\:")[1]));
+            }
+        }
+
+        for (String l : linhasFilter) {
+            m = findWarnings.matcher(l);
+            if (m.find()) {
+                warningsLinesFilters.add(Integer.parseInt(l.trim().split("\\:")[1]));
+            }
         }
 
         for (String l : linhasAll) {
@@ -135,6 +243,12 @@ public class Categorization {
             }
         }
 
+        try {
+            getFunctionsLine(warningsLinesAll, warningsLinesFilters);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     public void execGood() throws Exception {
@@ -177,18 +291,20 @@ public class Categorization {
             File fw = new File(pathExp + folderFiles + categorization);
             PrintWriter pw = new PrintWriter(new FileOutputStream(fw, false));
 
-            pw.write("cwe,file,kind,sloc,saAll,saFilter,rtc,ftCrashes,aflrtc_pass,aflrtc_fail,aflrtc_crash\n");
-            pw.write(cwe + "," + fileName + "," + kind + "," + this.sloc + "," + this.saAll + "," + this.saFilter + "," + resRTC + "," + numberCrashFT + "," + numberPass + ","
-                    + numberFail + "," + numberCrash + "\n");
+            pw.write("cwe,file,kind,sloc,saAll,insideAll,saFilter,insideFilter,rtc,ftCrashes,aflrtc_pass,aflrtc_fail,aflrtc_crash\n");
+            pw.write(cwe + "," + fileName + "," + kind + "," + this.sloc + "," + this.saAll 
+                    + "," + findWeaknessAll + "," + this.saFilter + "," + findWeaknessFilter + ","
+                    + resRTC + "," + numberCrashFT + "," + numberPass + "," + numberFail + "," + numberCrash + "\n");
 
             pw.close();
         } catch (IOException e) {
             System.out.println("error: e.printStackTrace()");
         }
 
-        System.out.println("cwe,file,kind,rtc,ftCrashes,aflrtc_pass,aflrtc_fail,aflrtc_crash\n");
-        System.out.println(cwe + "," + fileName + "," + kind + "," + this.sloc + "," + this.saAll + "," + this.saFilter + "," + resRTC + "," + numberCrashFT + "," + numberPass
-                + "," + numberFail + "," + numberCrash + "\n");
+        System.out.println("cwe,file,kind,sloc,saAll,insideAll,saFilter,insideFilter,rtc,ftCrashes,aflrtc_pass,aflrtc_fail,aflrtc_crash\n");
+        System.out.println(cwe + "," + fileName + "," + kind + "," + this.sloc + "," + this.saAll 
+        + "," + findWeaknessAll + "," + this.saFilter + "," + findWeaknessFilter + ","
+        + resRTC + "," + numberCrashFT + "," + numberPass + "," + numberFail + "," + numberCrash + "\n");
 
         // TEAR DOWN
         numberCrash = 0;

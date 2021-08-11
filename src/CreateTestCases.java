@@ -59,14 +59,30 @@ public class CreateTestCases {
     }
 
     private void start() throws Exception {
-        findMockedFunctions();
-        buildMockedFunctions();
         findBadFunction();
         findGoodFunction();
+        findMockedFunctions();
+        buildMockedFunctions();
         createGoodRTC();
         createBadRTC();
         createBadFT();
         createGoodFT();
+        recFunctions();// To use on categorization
+    }
+
+    public void recFunctions() {
+        File fw = new File(pathExp + folderFiles + "/testedfunctions.log");
+        PrintWriter pw;
+        try {
+            pw = new PrintWriter(new FileOutputStream(fw, false));
+            pw.write(badFunction + "\n");
+            pw.write(goodFunction + "\n");
+            pw.close();
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
     }
 
     private void compileTester(File tester, int phase, String kind) {
@@ -77,34 +93,35 @@ public class CreateTestCases {
             mockedList += ",--wrap=" + string.replaceAll(" ", "").replaceAll("void", "").split("\\(")[0];
         }
 
-        //gcc $testers$tester_bad -I$include -Wl,--wrap=$mock1 -lcmocka -o bad_a.out 2> output/rtc_bad_err.txt
-        if (phase == 1){
+        // gcc $testers$tester_bad -I$include -Wl,--wrap=$mock1 -lcmocka -o bad_a.out 2>
+        // output/rtc_bad_err.txt
+        if (phase == 1) {
             phaseStr = "rtc";
             if (mockedFunctionList.size() > 0) {
                 command = "gcc " + tester.getAbsolutePath() + " -I" + include + " -Wl,--wrap=fgets" + mockedList
-                        + " -lcmocka -o "+kind+"_a.out";
-    
+                        + " -lcmocka -o " + kind + "_a.out";
+
             } else {
-                command = "gcc " + tester.getAbsolutePath() + " -I" + include + " -lcmocka -o "+kind+"_a.out";
+                command = "gcc " + tester.getAbsolutePath() + " -I" + include + " -Wl,--wrap=fgets -lcmocka -o " + kind + "_a.out";
             }
 
-        } else if (phase == 2){
+        } else if (phase == 2) {
             phaseStr = "ft";
             if (mockedFunctionList.size() > 0) {
                 command = "afl-gcc " + tester.getAbsolutePath() + " -I" + include + " -Wl,--wrap=fgets" + mockedList
-                        + " -lcmocka -o fuzz_"+kind;
-    
+                        + " -lcmocka -o fuzz_" + kind;
+
             } else {
-                command = "afl-gcc " + tester.getAbsolutePath() + " -I" + include + " -lcmocka -o fuzz_"+kind;
+                command = "afl-gcc " + tester.getAbsolutePath() + " -I" + include + " -Wl,--wrap=fgets -lcmocka -o fuzz_" + kind;
             }
         }
-        System.out.println("DEBUG ****************\n" + command);
+        System.out.println("**** Compile command: " + command);
         try {
             Process p = Runtime.getRuntime().exec(command, null, new File(pathExp + folderFiles));
             p.waitFor();
             BufferedReader buf = new BufferedReader(new InputStreamReader(p.getErrorStream()));
             String line = "";
-            File file = new File(pathExp + folderFiles + "/output/"+phaseStr+"_"+kind+"_err.txt");
+            File file = new File(pathExp + folderFiles + "/output/" + phaseStr + "_" + kind + "_err.txt");
             PrintWriter pw = new PrintWriter(new FileOutputStream(file, true));
             while ((line = buf.readLine()) != null) {
                 pw.write(line + "\n");
@@ -117,7 +134,7 @@ public class CreateTestCases {
 
     private void findMockedFunctions() {
         Path path = Paths.get(pathDataSet + fileName);
-        Pattern findFunction = Pattern.compile(".float data");
+        // Pattern findFunction = Pattern.compile(".float data");
         List<String> linhas = new ArrayList<>();
         mockedFunctionList = new ArrayList<>();
         Matcher m;
@@ -131,10 +148,23 @@ public class CreateTestCases {
 
         for (String l : linhas) {
             m = findFunction.matcher(l);
-
-            if (m.find()) {
-                if (l.startsWith("void"))
-                    mockedFunctionList.add(l.replaceAll(";", ""));
+            if (fileName.contains("a.c")) {
+                if (m.find()) {
+                    // if (!l.startsWith("void " + badFunction + "(") && !l.startsWith("void " + goodFunction + "(")) {
+                    //     mockedFunctionList.add(l.replaceAll(";", ""));
+                    // }
+                    if (l.endsWith(";") && !l.startsWith("void " + badFunction.split("\\(")[0] + "(")
+                            && !l.startsWith("void " + goodFunction.split("\\(")[0] + "(")) {
+                        mockedFunctionList.add(l.replaceAll(";", ""));
+                    }
+                }
+            } else {
+                if (m.find()) {
+                    if (l.endsWith(";") && !l.startsWith("void " + badFunction.split("\\(")[0] + "(")
+                            && !l.startsWith("void " + goodFunction.split("\\(")[0] + "(")) {
+                        mockedFunctionList.add(l.replaceAll(";", ""));
+                    }
+                }
             }
         }
     }
@@ -142,7 +172,11 @@ public class CreateTestCases {
     private void buildMockedFunctions() throws IOException {
         mockedFunctionsString = "";
         for (String string : mockedFunctionList) {
-            mockedFunctionsString += string + "{int result = (int)(100.0 / data);printIntLine(result);}\n";
+            if(string.endsWith("()")){
+                mockedFunctionsString += string.split(" ")[0] + " __wrap_" + string.replaceAll("void ", "") + "{int result = (int)(100.0 / data);printIntLine(result);}\n";
+            } else {
+                mockedFunctionsString += string.split(" ")[0] + " __wrap_" + string.replaceAll("void ", "") + "{int result = (int)(100.0 / data);printIntLine(result);}\n";
+            }
         }
     }
 
@@ -163,9 +197,20 @@ public class CreateTestCases {
         for (String l : linhas) {
             m = findFunction.matcher(l);
             if (m.find()) {
-                if (!l.contains("(char")) {
-                    if (l.endsWith("_bad") || l.endsWith("_badSink")) {
+                // void CWE369_Divide_by_Zero__float_fgets_22_good()
+                // void CWE134_Uncontrolled_Format_String__char_file_fprintf_12_bad()
+
+                if (fileName.contains("b.c") || fileName.contains("c.c") || fileName.contains("d.c")) {
+
+                    if (l.contains("_bad") && !l.endsWith(";")) {
                         badFunction = l.split(" ")[1].split("\\(")[0];
+                        badFunction += "(input);//";
+                        System.out.println("******" + badFunction);
+                        break;
+                    }
+                } else {
+                    if (l.endsWith("()") && l.contains("_bad")) {
+                        badFunction = l.split(" ")[1].replace("()", "");
                         System.out.println("******" + badFunction);
                         break;
                     }
@@ -181,6 +226,7 @@ public class CreateTestCases {
 
         Path path = Paths.get(pathDataSet + fileName);
         List<String> linhas = new ArrayList<>();
+        Pattern findGoodFunction = Pattern.compile("void good");
         Matcher m;
 
         try {
@@ -192,15 +238,19 @@ public class CreateTestCases {
 
         System.out.println(fileName + "********GOOD*********");
         for (String l : linhas) {
-            m = findFunction.matcher(l);
+            m = findGoodFunction.matcher(l);
             if (m.find()) {
-                if (!l.contains("(char")) {
-                    if (l.endsWith("_good()")) {
-                        goodFunction = l.split(" ")[1].replace("()", "");
-                        System.out.println("******" + goodFunction);
-                        break;
+
+                if (l.contains("B2G") && !l.endsWith(";")) {
+                    if (!l.endsWith("()")) {
+                        goodFunction = l.split(" ")[2].split("\\(")[0];
+                        goodFunction += "(input);//";
+                    } else {
+                        goodFunction = l.split(" ")[2].split("\\(")[0];
                     }
+                    break;
                 }
+
             }
         }
     }
@@ -277,7 +327,7 @@ public class CreateTestCases {
         } finally {
             fileWriter.close();
         }
-        
+
         compileTester(file, 2, "good");
 
     }

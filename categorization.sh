@@ -1,4 +1,5 @@
 cwe="$1"
+pathTestedFiles="$2"
 
 # res1=$(date +%s.%N)
 
@@ -9,7 +10,7 @@ exp_folder="$dir/Files"
 
 cd src
 javac Categorization.java
-java Categorization "$cwe"
+java Categorization "$cwe" "$pathTestedFiles"
 cd ../
 
 # res2=$(date +%s.%N)
