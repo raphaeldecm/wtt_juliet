@@ -36,9 +36,11 @@ public class CreateTestCases {
     private String templateDirectory;
     private String cweKind;
     private String testerName;
+    private String externVarString;
     private String mockedFunctionsString;
     private Pattern findFunction;
     private List<String> mockedFunctionList;
+    private List<String> externVarList;
 
     public static void main(String[] args) throws Exception {
         pathDataSet = args[0];
@@ -63,6 +65,8 @@ public class CreateTestCases {
         findGoodFunction();
         findMockedFunctions();
         buildMockedFunctions();
+        findExternVar();
+        buildExternVar();
         createGoodRTC();
         createBadRTC();
         createBadFT();
@@ -102,7 +106,8 @@ public class CreateTestCases {
                         + " -lcmocka -o " + kind + "_a.out";
 
             } else {
-                command = "gcc " + tester.getAbsolutePath() + " -I" + include + " -Wl,--wrap=fgets -lcmocka -o " + kind + "_a.out";
+                command = "gcc " + tester.getAbsolutePath() + " -I" + include + " -Wl,--wrap=fgets -lcmocka -o " + kind
+                        + "_a.out";
             }
 
         } else if (phase == 2) {
@@ -112,7 +117,8 @@ public class CreateTestCases {
                         + " -lcmocka -o fuzz_" + kind;
 
             } else {
-                command = "afl-gcc " + tester.getAbsolutePath() + " -I" + include + " -Wl,--wrap=fgets -lcmocka -o fuzz_" + kind;
+                command = "afl-gcc " + tester.getAbsolutePath() + " -I" + include
+                        + " -Wl,--wrap=fgets -lcmocka -o fuzz_" + kind;
             }
         }
         System.out.println("**** Compile command: " + command);
@@ -130,6 +136,36 @@ public class CreateTestCases {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void findExternVar() {
+        Path path = Paths.get(pathDataSet + fileName);
+        Pattern findExtern = Pattern.compile("extern");
+        List<String> linhas = new ArrayList<>();
+        externVarList = new ArrayList<>();
+        Matcher m;
+
+        try {
+            linhas = Files.readAllLines(path);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        for (String l : linhas) {
+            m = findExtern.matcher(l);
+            if (m.find()) {
+                externVarList.add(l.replaceAll(";", " = 1;").replaceAll("extern ", ""));
+            }
+        }
+    }
+
+    private void buildExternVar() throws IOException {
+        externVarString = "";
+        for (String string : externVarList) {
+            externVarString += string + "\n";
+        }
+        System.out.println("################ " + externVarString);
     }
 
     private void findMockedFunctions() {
@@ -150,8 +186,9 @@ public class CreateTestCases {
             m = findFunction.matcher(l);
             if (fileName.contains("a.c")) {
                 if (m.find()) {
-                    // if (!l.startsWith("void " + badFunction + "(") && !l.startsWith("void " + goodFunction + "(")) {
-                    //     mockedFunctionList.add(l.replaceAll(";", ""));
+                    // if (!l.startsWith("void " + badFunction + "(") && !l.startsWith("void " +
+                    // goodFunction + "(")) {
+                    // mockedFunctionList.add(l.replaceAll(";", ""));
                     // }
                     if (l.endsWith(";") && !l.startsWith("void " + badFunction.split("\\(")[0] + "(")
                             && !l.startsWith("void " + goodFunction.split("\\(")[0] + "(")) {
@@ -172,10 +209,12 @@ public class CreateTestCases {
     private void buildMockedFunctions() throws IOException {
         mockedFunctionsString = "";
         for (String string : mockedFunctionList) {
-            if(string.endsWith("()")){
-                mockedFunctionsString += string.split(" ")[0] + " __wrap_" + string.replaceAll("void ", "") + "{int result = (int)(100.0 / data);printIntLine(result);}\n";
+            if (string.endsWith("()")) {
+                mockedFunctionsString += string.split(" ")[0] + " __wrap_" + string.replaceAll("void ", "")
+                        + "{int result = (int)(100.0 / data);printIntLine(result);}\n";
             } else {
-                mockedFunctionsString += string.split(" ")[0] + " __wrap_" + string.replaceAll("void ", "") + "{int result = (int)(100.0 / data);printIntLine(result);}\n";
+                mockedFunctionsString += string.split(" ")[0] + " __wrap_" + string.replaceAll("void ", "")
+                        + "{int result = (int)(100.0 / data);printIntLine(result);}\n";
             }
         }
     }
@@ -226,7 +265,7 @@ public class CreateTestCases {
 
         Path path = Paths.get(pathDataSet + fileName);
         List<String> linhas = new ArrayList<>();
-        Pattern findGoodFunction = Pattern.compile("void good");
+        Pattern findGoodFunction = Pattern.compile("void");
         Matcher m;
 
         try {
@@ -237,18 +276,33 @@ public class CreateTestCases {
         }
 
         System.out.println(fileName + "********GOOD*********");
+
         for (String l : linhas) {
             m = findGoodFunction.matcher(l);
             if (m.find()) {
 
-                if (l.contains("B2G") && !l.endsWith(";")) {
-                    if (!l.endsWith("()")) {
-                        goodFunction = l.split(" ")[2].split("\\(")[0];
-                        goodFunction += "(input);//";
-                    } else {
-                        goodFunction = l.split(" ")[2].split("\\(")[0];
+                if (fileName.contains("b.c") || fileName.contains("c.c") || fileName.contains("d.c")) {
+                    if (l.contains("B2G") && !l.endsWith(";")) {
+                        if (!l.endsWith("()")) {
+                            goodFunction = l.split(" ")[1].split("\\(")[0];
+                            goodFunction += "(input);//";
+                        } else {
+                            goodFunction = l.split(" ")[1].split("\\(")[0];
+                        }
+                        System.out.println("******" + goodFunction);
+                        break;
                     }
-                    break;
+                } else {
+                    if (l.contains("B2G") && !l.endsWith(";")) {
+                        if (!l.endsWith("()")) {
+                            goodFunction = l.split(" ")[2].split("\\(")[0];
+                            goodFunction += "(input);//";
+                        } else {
+                            goodFunction = l.split(" ")[2].split("\\(")[0];
+                        }
+                        System.out.println("****** a " + goodFunction);
+                        break;
+                    }
                 }
 
             }
@@ -273,6 +327,13 @@ public class CreateTestCases {
         root.put("fileName", fileName);
         root.put("type", "bad");
         root.put("testedFunction", badFunction);
+
+        if (externVarList.size() > 0) {
+            root.put("externVar", externVarString);
+        } else {
+            root.put("externVar", "//");
+        }
+
         if (mockedFunctionList.size() > 0) {
             root.put("mockedFunctions", mockedFunctionsString);
         } else {
@@ -312,6 +373,13 @@ public class CreateTestCases {
         root.put("fileName", fileName);
         root.put("type", "good");
         root.put("testedFunction", goodFunction);
+
+        if (externVarList.size() > 0) {
+            root.put("externVar", externVarString);
+        } else {
+            root.put("externVar", "//");
+        }
+
         if (mockedFunctionList.size() > 0) {
             root.put("mockedFunctions", mockedFunctionsString);
         } else {
@@ -349,6 +417,13 @@ public class CreateTestCases {
         root.put("pathDataSet", pathDataSet);
         root.put("fileName", fileName);
         root.put("testedFunction", goodFunction);
+
+        if (externVarList.size() > 0) {
+            root.put("externVar", externVarString);
+        } else {
+            root.put("externVar", "//");
+        }
+
         if (mockedFunctionList.size() > 0) {
             root.put("mockedFunctions", mockedFunctionsString);
         } else {
@@ -388,6 +463,13 @@ public class CreateTestCases {
         root.put("pathDataSet", pathDataSet);
         root.put("fileName", fileName);
         root.put("testedFunction", badFunction);
+
+        if (externVarList.size() > 0) {
+            root.put("externVar", externVarString);
+        } else {
+            root.put("externVar", "//");
+        }
+
         if (mockedFunctionList.size() > 0) {
             root.put("mockedFunctions", mockedFunctionsString);
         } else {

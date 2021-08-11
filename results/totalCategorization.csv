@@ -119,3 +119,5 @@ CWE369,CWE369_Divide_by_Zero__float_fgets_04.c,bad,161,4,true,1,false,FAILED,0,8
 CWE369,CWE369_Divide_by_Zero__float_fgets_04.c,good,161,4,true,1,false,PASSED,0,1451,46,0
 CWE369,CWE369_Divide_by_Zero__float_fgets_10.c,bad,159,4,true,1,false,FAILED,0,838,49,0
 CWE369,CWE369_Divide_by_Zero__float_fgets_10.c,good,159,4,true,1,false,PASSED,0,754,45,0
+CWE369,CWE369_Divide_by_Zero__float_fgets_22b.c,bad,64,0,false,0,false,FAILED,0,809,44,0
+CWE369,CWE369_Divide_by_Zero__float_fgets_22b.c,good,64,0,false,0,false,PASSED,0,828,0,0

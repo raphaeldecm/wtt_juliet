@@ -228,21 +228,25 @@ public class Categorization {
                 this.sloc = l.trim().split("=")[1].replaceAll(" ", "");
             }
         }
-
+        
         for (String l : linhasAll) {
             m = findHits.matcher(l);
             if (m.find()) {
                 this.saAll = l.trim().split("=")[1].replaceAll(" ", "");
             }
         }
-
+        if(this.saAll.isEmpty()){
+            this.saAll = "0";
+        }
         for (String l : linhasFilter) {
             m = findHits.matcher(l);
             if (m.find()) {
                 this.saFilter = l.trim().split("=")[1].replaceAll(" ", "");
             }
         }
-
+        if(this.saFilter.isEmpty()){
+            this.saFilter = "0";
+        }
         try {
             getFunctionsLine(warningsLinesAll, warningsLinesFilters);
         } catch (IOException e) {
