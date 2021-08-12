@@ -237,7 +237,7 @@ public class CreateTestCases {
                 // void CWE369_Divide_by_Zero__float_fgets_22_good()
                 // void CWE134_Uncontrolled_Format_String__char_file_fprintf_12_bad()
 
-                if (fileName.contains("b.c") || fileName.contains("c.c") || fileName.contains("d.c")) {
+                if (fileName.contains("b.c") || fileName.contains("c.c") || fileName.contains("d.c") || fileName.contains("e.c")) {
 
                     if (l.contains("_bad") && !l.endsWith(";")) {
                         badFunction = l.split(" ")[1].split("\\(")[0];
@@ -279,7 +279,7 @@ public class CreateTestCases {
             m = findGoodFunction.matcher(l);
             if (m.find()) {
 
-                if (fileName.contains("b.c") || fileName.contains("c.c") || fileName.contains("d.c")) {
+                if (fileName.contains("b.c") || fileName.contains("c.c") || fileName.contains("d.c") || fileName.contains("e.c")) {
                     if (l.contains("B2G") && !l.endsWith(";")) {
                         if (!l.endsWith("()")) {
                             goodFunction = l.split(" ")[1].split("\\(")[0];
