@@ -18,7 +18,7 @@ fi
 
 cd src
 javac -cp ../lib/freemarker.jar CreateTestCases.java
-java -cp .:../lib/freemarker.jar CreateTestCases "$testcases" "$filename" "$include"
+java -cp .:../lib/freemarker.jar CreateTestCases "$testcases" "$filename" "$include" >> "$exp_folder/compile.log"
 cd ../
 
 res2=$(date +%s.%N)
