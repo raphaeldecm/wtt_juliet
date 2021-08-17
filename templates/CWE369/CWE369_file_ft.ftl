@@ -26,15 +26,16 @@ static void test_juliet_rtc(void **state)
 {
     (void)state; //unused variable
 
-    int input;
-    scanf("%d\n", &input);
-
-    sprintf(inputBuffer, "%d", input);
+    float input;
+    /* Initialize input */
+    scanf("%f\n", &input);
+    
+    sprintf(inputBuffer, "%f", input);
 
     FILE *fileAddress;
     fileAddress = fopen("log_afl_${type}.txt", "a");
     if (fileAddress != NULL){
-        fprintf(fileAddress, "%d\n", input);
+        fprintf(fileAddress, "%f\n", input);
         fclose(fileAddress);
     }
 
@@ -43,12 +44,23 @@ static void test_juliet_rtc(void **state)
     setbuf(stdout, buf);
 
     ${testedFunction}();
-    
+
     freopen("/dev/tty", "a", stdout);
 
-    int bufI = atoi(buf);
-    
-    assert_true(bufI >= 0);
+    if (input != 0)
+    {
+        assert_true(1);
+    }
+    else
+    {
+        char *pos;
+        if ((pos = strchr(buf, '\n')) != NULL)
+        {
+            *pos = '\0';
+        }
+        assert_string_equal(buf ,"This would result in a divide by zero");
+    }
+
 }
 
 int setup(void **state){

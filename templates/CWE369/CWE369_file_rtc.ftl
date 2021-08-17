@@ -25,21 +25,34 @@ char __wrap_fgets(char *__restrict __s, int __n, FILE *__restrict __stream)
 static void test_juliet_rtc(void **state)
 {
     (void)state; //unused variable
+    float input;
+    /* Initialize input */
+    input = 0.0F;
+    
+    sprintf(inputBuffer, "%f", input);
 
-    int input = 0;
-
-    sprintf(inputBuffer, "%d", input);
     char buf[BUFSIZ];
     freopen("/dev/null", "a", stdout);
     setbuf(stdout, buf);
 
     ${testedFunction}();
-    
+
     freopen("/dev/tty", "a", stdout);
 
-    int bufI = atoi(buf);
-    
-    assert_true(bufI >= 0);
+    if (input != 0)
+    {
+        assert_true(1);
+    }
+    else
+    {
+        char *pos;
+        if ((pos = strchr(buf, '\n')) != NULL)
+        {
+            *pos = '\0';
+        }
+        assert_string_equal(buf ,"This would result in a divide by zero");
+    }
+
 }
 
 int setup(void **state){

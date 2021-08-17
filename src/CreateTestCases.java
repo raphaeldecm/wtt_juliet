@@ -206,13 +206,16 @@ public class CreateTestCases {
 
     private void buildMockedFunctions() throws IOException {
         mockedFunctionsString = "";
-        for (String string : mockedFunctionList) {
-            if (string.endsWith("()")) {
-                mockedFunctionsString += string.split(" ")[0] + " __wrap_" + string.replaceAll("void ", "")
-                        + "{int result = (int)(100.0 / data);printIntLine(result);}\n";
-            } else {
-                mockedFunctionsString += string.split(" ")[0] + " __wrap_" + string.replaceAll("void ", "")
-                        + "{int result = (int)(100.0 / data);printIntLine(result);}\n";
+
+        if(cweKind.equals("CWE369")){
+            for (String string : mockedFunctionList) {
+                if (string.contains("_good")) {
+                    mockedFunctionsString += string.split(" ")[0] + " __wrap_" + string.replaceAll("void ", "")
+                            + "{if(fabs(data) > 0.000001){int result = (int)(100.0 / data);printIntLine(result);}else{printLine(\"This would result in a divide by zero\");}}\n";
+                } else {
+                    mockedFunctionsString += string.split(" ")[0] + " __wrap_" + string.replaceAll("void ", "")
+                            + "{int result = (int)(100.0 / data);printIntLine(result);}\n";
+                }
             }
         }
     }

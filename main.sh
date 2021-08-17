@@ -17,11 +17,12 @@ tester_file_rtc_good="tester_wtt_CWE369_good_rtc.c"
 
 # mocked_function1="fgets"
 # mocked_function2="buffer_output"
-include_folder="/home/raphael/DOCFILES/DoctoralFiles/Juliet/C/testcasesupport"
+include_folder="/home/raphael/DOCFILES/DoctoralFiles/Juliet/C1.2/testcasesupport"
 
-#testcases="/home/raphael/DOCFILES/DoctoralFiles/Juliet/C/testcases/CWE134_Uncontrolled_Format_String/wtt/"
-testcases="/home/raphael/DOCFILES/DoctoralFiles/Juliet/C/testcases/CWE369_Divide_by_Zero/wtt/"
-#testcases="/home/raphael/DOCFILES/DoctoralFiles/Juliet/C/testcases/CWE121_Stack_Based_Buffer_Overflow/wtt/"
+#testcases="/home/raphael/DOCFILES/DoctoralFiles/Juliet/C1.2/testcases/CWE121_Stack_Based_Buffer_Overflow/wtt/"
+#testcases="/home/raphael/DOCFILES/DoctoralFiles/Juliet/C1.2/testcases/CWE134_Uncontrolled_Format_String/wtt/"
+testcases="/home/raphael/DOCFILES/DoctoralFiles/Juliet/C1.2/testcases/CWE369_Divide_by_Zero/wtt/"
+#testcases="/home/raphael/DOCFILES/DoctoralFiles/Juliet/C1.2/testcases/CWE121_Stack_Based_Buffer_Overflow/wtt/"
 
 echo -e '\nLendo diretório [@] -----------------------------------'
 i=0

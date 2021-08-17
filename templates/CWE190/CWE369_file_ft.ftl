@@ -6,15 +6,14 @@
 #include <setjmp.h>
 #include <cmocka.h>
 
-//#include "/home/raphael/DOCFILES/DoctoralFiles/Juliet/C/testcases/CWE121_Stack_Based_Buffer_Overflow/s04/CWE121_Stack_Based_Buffer_Overflow__CWE805_char_declare_snprintf_02.c"
 #include "${pathDataSet}${fileName}"
 #include "/home/raphael/DOCFILES/DoctoralFiles/Juliet/C/testcasesupport/io.c"
 
-#define CHAR_ARRAY_SIZE (3 * sizeof(data) + 2)
+#define CHAR_ARRAY_SIZE 20
 
 char inputBuffer[BUFSIZ];
 
-//Mocked
+//Mocked functions
 ${externVar}
 ${mockedFunctions}
 char __wrap_fgets(char *__restrict __s, int __n, FILE *__restrict __stream)
@@ -27,29 +26,29 @@ static void test_juliet_rtc(void **state)
 {
     (void)state; //unused variable
 
-    int data;
-    data = -1;
+    int input;
+    scanf("%d\n", &input);
 
-    char input[CHAR_ARRAY_SIZE] = "19";
+    sprintf(inputBuffer, "%d", input);
 
-    sprintf(inputBuffer, "%s", input);
+    FILE *fileAddress;
+    fileAddress = fopen("log_afl_${type}.txt", "a");
+    if (fileAddress != NULL){
+        fprintf(fileAddress, "%d\n", input);
+        fclose(fileAddress);
+    }
 
     char buf[BUFSIZ];
     freopen("/dev/null", "a", stdout);
     setbuf(stdout, buf);
 
     ${testedFunction}();
-
+    
     freopen("/dev/tty", "a", stdout);
 
-    data = atoi(buf);
-    int ipt = atoi(input);
+    int bufI = atoi(buf);
     
-    if (ipt >= 0 && ipt < (10)){
-        assert_true(data >= 0);
-    } else {
-        assert_string_equal("ERROR: Array index is out-of-bounds\n", buf);
-    }
+    assert_true(bufI >= 0);
 }
 
 int setup(void **state){
