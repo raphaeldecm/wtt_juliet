@@ -222,7 +222,7 @@ public class Results {
             }
             pw.close();
 
-            pwCat.write("cwe,file,kind,sloc,saAll,saFilter,rtc,ftCrashes,aflrtc_pass,aflrtc_fail,aflrtc_crash");
+            pwCat.write("cwe,file,kind,sloc,saAll,insideAll,saFilter,insideFilter,rtc,ftCrashes,aflrtc_pass,aflrtc_fail,aflrtc_crash");
             for (String string : resTotalCat) {
                 pwCat.write(string+"\n");
             }

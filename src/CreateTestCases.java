@@ -56,6 +56,7 @@ public class CreateTestCases {
         this.cweKind = fileName.split("_")[0];
         this.testerName = "tester_wtt_" + cweKind;
         this.findFunction = Pattern.compile("void " + cweKind);
+        this.goodFunction = "";
     }
 
     private void start() throws Exception {
@@ -92,7 +93,8 @@ public class CreateTestCases {
         String command = "";
         String phaseStr = "";
         for (String string : mockedFunctionList) {
-            mockedList += ",--wrap=" + string.replaceAll(" ", "").replaceAll("void", "").split("\\(")[0];
+            //Old v replaceAll(" ", "").replaceAll("void", "")
+            mockedList += ",--wrap=" + string.split(" ")[1].split("\\(")[0];
         }
 
         // gcc $testers$tester_bad -I$include -Wl,--wrap=$mock1 -lcmocka -o bad_a.out 2>
@@ -153,7 +155,7 @@ public class CreateTestCases {
         for (String l : linhas) {
             m = findExtern.matcher(l);
             if (m.find()) {
-                externVarList.add(l.replaceAll(";", " = 1;").replaceAll("extern ", ""));
+                externVarList.add(l.replaceAll(";", " = 0;").replaceAll("extern ", ""));
             }
         }
     }
@@ -168,9 +170,10 @@ public class CreateTestCases {
 
     private void findMockedFunctions() {
         Path path = Paths.get(pathDataSet + fileName);
-        // Pattern findFunction = Pattern.compile(".float data");
+        Pattern findFloatFunction = Pattern.compile("float " + cweKind);
         List<String> linhas = new ArrayList<>();
         mockedFunctionList = new ArrayList<>();
+
         Matcher m;
 
         try {
@@ -184,10 +187,6 @@ public class CreateTestCases {
             m = findFunction.matcher(l);
             if (fileName.contains("a.c")) {
                 if (m.find()) {
-                    // if (!l.startsWith("void " + badFunction + "(") && !l.startsWith("void " +
-                    // goodFunction + "(")) {
-                    // mockedFunctionList.add(l.replaceAll(";", ""));
-                    // }
                     if (l.endsWith(";") && !l.startsWith("void " + badFunction.split("\\(")[0] + "(")
                             && !l.startsWith("void " + goodFunction.split("\\(")[0] + "(")) {
                         mockedFunctionList.add(l.replaceAll(";", ""));
@@ -202,19 +201,51 @@ public class CreateTestCases {
                 }
             }
         }
+
+        // for (String l : linhas) {
+        //     m = findFloatFunction.matcher(l);
+        //     if (m.find()) {
+        //         mockedFunctionList.add(l.replaceAll(";", ""));
+        //     }
+        // }
+
     }
 
     private void buildMockedFunctions() throws IOException {
         mockedFunctionsString = "";
+        String voidGood = "";
+        String voidBad = "";
+        String floatGood = "";
+        String floatBad = "";
 
-        if(cweKind.equals("CWE369")){
+        if (cweKind.equals("CWE369")) {
+            voidGood = "{float data = CWE369_Divide_by_Zero__float_fgets_68_goodB2GData;if(fabs(data) > 0.000001){int result = (int)(100.0 / data);printIntLine(result);}else{printLine(\"This would result in a divide by zero\");}}\n";//"{if(fabs(data) > 0.000001){int result = (int)(100.0 / data);printIntLine(result);}else{printLine(\"This would result in a divide by zero\");}}\n";
+            voidBad = "{float data = CWE369_Divide_by_Zero__float_fgets_68_badData;{int result = (int)(100.0 / data);printIntLine(result);}}\n";//"{int result = (int)(100.0 / data);printIntLine(result);}\n";
+
+            floatGood = "{{char inputBuffer[CHAR_ARRAY_SIZE];if (fgets(inputBuffer, CHAR_ARRAY_SIZE, stdin) != NULL){data = (float)atof(inputBuffer);}else{printLine(\"fgets() failed.\");}}return data;}\n";
+            floatBad = "{{char inputBuffer[CHAR_ARRAY_SIZE];if (fgets(inputBuffer, CHAR_ARRAY_SIZE, stdin) != NULL){data = (float)atof(inputBuffer);}else{printLine(\"fgets() failed.\");}}return data;}\n";
+
+            String floatGood2 = "{float data = *dataPtr;if(fabs(data) > 0.000001){int result = (int)(100.0 / data);printIntLine(result);}else{printLine(\"This would result in a divide by zero\");}}\n";
+            String floatBad2 = "{float data = *dataPtr;{int result = (int)(100.0 / data);printIntLine(result);}}\n";
+
             for (String string : mockedFunctionList) {
                 if (string.contains("_good")) {
-                    mockedFunctionsString += string.split(" ")[0] + " __wrap_" + string.replaceAll("void ", "")
-                            + "{if(fabs(data) > 0.000001){int result = (int)(100.0 / data);printIntLine(result);}else{printLine(\"This would result in a divide by zero\");}}\n";
+                    if (string.startsWith("float ")) {
+                        mockedFunctionsString += string.split(" ")[0] + " __wrap_"
+                                + string.replaceAll("void ", "").replaceAll("float ", "") + floatGood;
+                    } else {
+                        mockedFunctionsString += string.split(" ")[0] + " __wrap_"
+                                + string.replaceAll("void ", "") + voidGood;
+                    }
                 } else {
-                    mockedFunctionsString += string.split(" ")[0] + " __wrap_" + string.replaceAll("void ", "")
-                            + "{int result = (int)(100.0 / data);printIntLine(result);}\n";
+                    if (string.startsWith("float ")) {
+                        mockedFunctionsString += string.split(" ")[0] + " __wrap_"
+                                + string.replaceAll("void ", "").replaceAll("float ", "") + floatBad;
+                    } else {
+                        mockedFunctionsString += string.split(" ")[0] + " __wrap_"
+                                + string.replaceAll("void ", "") + voidBad;
+
+                    }
                 }
             }
         }
@@ -223,6 +254,7 @@ public class CreateTestCases {
     public void findBadFunction() throws FileNotFoundException {
 
         Path path = Paths.get(pathDataSet + fileName);
+        Pattern findCWE = Pattern.compile(cweKind);
         List<String> linhas = new ArrayList<>();
         Matcher m;
 
@@ -235,12 +267,14 @@ public class CreateTestCases {
 
         System.out.println(fileName + "********BAD*********");
         for (String l : linhas) {
-            m = findFunction.matcher(l);
+            m = findCWE.matcher(l);
             if (m.find()) {
                 // void CWE369_Divide_by_Zero__float_fgets_22_good()
                 // void CWE134_Uncontrolled_Format_String__char_file_fprintf_12_bad()
+                //float CWE369_Divide_by_Zero__float_fgets_61b_goodB2GSource(float data)
 
-                if (fileName.contains("b.c") || fileName.contains("c.c") || fileName.contains("d.c") || fileName.contains("e.c")) {
+                if (fileName.contains("b.c") || fileName.contains("c.c") || fileName.contains("d.c")
+                        || fileName.contains("e.c")) {
 
                     if (l.contains("_bad") && !l.endsWith(";")) {
                         badFunction = l.split(" ")[1].split("\\(")[0];
@@ -267,6 +301,8 @@ public class CreateTestCases {
         Path path = Paths.get(pathDataSet + fileName);
         List<String> linhas = new ArrayList<>();
         Pattern findGoodFunction = Pattern.compile("void");
+        Pattern findCWE = Pattern.compile(cweKind);
+        
         Matcher m;
 
         try {
@@ -282,7 +318,8 @@ public class CreateTestCases {
             m = findGoodFunction.matcher(l);
             if (m.find()) {
 
-                if (fileName.contains("b.c") || fileName.contains("c.c") || fileName.contains("d.c") || fileName.contains("e.c")) {
+                if (fileName.contains("b.c") || fileName.contains("c.c") || fileName.contains("d.c")
+                        || fileName.contains("e.c")) {
                     if (l.contains("B2G") && !l.endsWith(";")) {
                         if (!l.endsWith("()")) {
                             goodFunction = l.split(" ")[1].split("\\(")[0];
@@ -307,6 +344,26 @@ public class CreateTestCases {
                 }
 
             }
+        }
+        //float CWE369_Divide_by_Zero__float_fgets_61b_goodB2GSource(float data)
+        if(goodFunction.isEmpty()){
+            
+            for (String l : linhas) {
+                m = findCWE.matcher(l);
+                if (m.find()) {
+                    if (l.contains("B2G") && !l.endsWith(";")) {
+                        if (!l.endsWith("()")) {
+                            goodFunction = l.split(" ")[1].split("\\(")[0];
+                            goodFunction += "(input);//";
+                        } else {
+                            goodFunction = l.split(" ")[1].split("\\(")[0];
+                        }
+                        System.out.println("******" + goodFunction);
+                        break;
+                    }
+                }
+            }
+
         }
     }
 
