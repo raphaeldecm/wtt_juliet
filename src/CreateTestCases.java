@@ -39,6 +39,7 @@ public class CreateTestCases {
     private Pattern findFunction;
     private List<String> mockedFunctionList;
     private List<String> externVarList;
+    private String functionParam;
 
     public static void main(String[] args) throws Exception {
         pathDataSet = args[0];
@@ -57,6 +58,7 @@ public class CreateTestCases {
         this.testerName = "tester_wtt_" + cweKind;
         this.findFunction = Pattern.compile("void " + cweKind);
         this.goodFunction = "";
+        this.functionParam = "(input)";
     }
 
     private void start() throws Exception {
@@ -219,8 +221,8 @@ public class CreateTestCases {
         String floatBad = "";
 
         if (cweKind.equals("CWE369")) {
-            voidGood = "{float data = CWE369_Divide_by_Zero__float_fgets_68_goodB2GData;if(fabs(data) > 0.000001){int result = (int)(100.0 / data);printIntLine(result);}else{printLine(\"This would result in a divide by zero\");}}\n";//"{if(fabs(data) > 0.000001){int result = (int)(100.0 / data);printIntLine(result);}else{printLine(\"This would result in a divide by zero\");}}\n";
-            voidBad = "{float data = CWE369_Divide_by_Zero__float_fgets_68_badData;{int result = (int)(100.0 / data);printIntLine(result);}}\n";//"{int result = (int)(100.0 / data);printIntLine(result);}\n";
+            voidGood = "{if(data != 0){printIntLine(100 / data);}else{printLine(\"This would result in a divide by zero\");}}\n";
+            voidBad = "{printIntLine(100 / data);}\n";
 
             floatGood = "{{char inputBuffer[CHAR_ARRAY_SIZE];if (fgets(inputBuffer, CHAR_ARRAY_SIZE, stdin) != NULL){data = (float)atof(inputBuffer);}else{printLine(\"fgets() failed.\");}}return data;}\n";
             floatBad = "{{char inputBuffer[CHAR_ARRAY_SIZE];if (fgets(inputBuffer, CHAR_ARRAY_SIZE, stdin) != NULL){data = (float)atof(inputBuffer);}else{printLine(\"fgets() failed.\");}}return data;}\n";
@@ -229,13 +231,15 @@ public class CreateTestCases {
             String floatBad2 = "{float data = *dataPtr;{int result = (int)(100.0 / data);printIntLine(result);}}\n";
 
             for (String string : mockedFunctionList) {
+                System.out.println("**** Mock functions: " + string);
+                //void CWE369_Divide_by_Zero__int_fgets_divide_64b_badSink(void * dataVoidPtr)
                 if (string.contains("_good")) {
                     if (string.startsWith("float ")) {
                         mockedFunctionsString += string.split(" ")[0] + " __wrap_"
                                 + string.replaceAll("void ", "").replaceAll("float ", "") + floatGood;
                     } else {
                         mockedFunctionsString += string.split(" ")[0] + " __wrap_"
-                                + string.replaceAll("void ", "") + voidGood;
+                                + string.substring(string.split(" ")[0].length()).trim() + voidGood;
                     }
                 } else {
                     if (string.startsWith("float ")) {
@@ -243,7 +247,7 @@ public class CreateTestCases {
                                 + string.replaceAll("void ", "").replaceAll("float ", "") + floatBad;
                     } else {
                         mockedFunctionsString += string.split(" ")[0] + " __wrap_"
-                                + string.replaceAll("void ", "") + voidBad;
+                                + string.substring(string.split(" ")[0].length()).trim() + voidBad;
 
                     }
                 }
@@ -278,7 +282,7 @@ public class CreateTestCases {
 
                     if (l.contains("_bad") && !l.endsWith(";")) {
                         badFunction = l.split(" ")[1].split("\\(")[0];
-                        badFunction += "(input);//";
+                        badFunction += functionParam + ";//";
                         System.out.println("******" + badFunction);
                         break;
                     }
@@ -323,7 +327,7 @@ public class CreateTestCases {
                     if (l.contains("B2G") && !l.endsWith(";")) {
                         if (!l.endsWith("()")) {
                             goodFunction = l.split(" ")[1].split("\\(")[0];
-                            goodFunction += "(input);//";
+                            goodFunction += functionParam + ";//";
                         } else {
                             goodFunction = l.split(" ")[1].split("\\(")[0];
                         }
@@ -334,7 +338,7 @@ public class CreateTestCases {
                     if (l.contains("B2G") && !l.endsWith(";")) {
                         if (!l.endsWith("()")) {
                             goodFunction = l.split(" ")[2].split("\\(")[0];
-                            goodFunction += "(input);//";
+                            goodFunction += functionParam + ";//";
                         } else {
                             goodFunction = l.split(" ")[2].split("\\(")[0];
                         }
@@ -354,7 +358,7 @@ public class CreateTestCases {
                     if (l.contains("B2G") && !l.endsWith(";")) {
                         if (!l.endsWith("()")) {
                             goodFunction = l.split(" ")[1].split("\\(")[0];
-                            goodFunction += "(input);//";
+                            goodFunction += functionParam + ";//";
                         } else {
                             goodFunction = l.split(" ")[1].split("\\(")[0];
                         }

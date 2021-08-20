@@ -7,7 +7,7 @@
 #include <cmocka.h>
 
 #include "${pathDataSet}${fileName}"
-#include "/home/raphael/DOCFILES/DoctoralFiles/Juliet/C/testcasesupport/io.c"
+#include "/home/raphael/DOCFILES/DoctoralFiles/Juliet/C1.2/testcasesupport/io.c"
 
 #define CHAR_ARRAY_SIZE 20
 
@@ -25,11 +25,11 @@ char __wrap_fgets(char *__restrict __s, int __n, FILE *__restrict __stream)
 static void test_juliet_rtc(void **state)
 {
     (void)state; //unused variable
-    float input;
+    int input;
     /* Initialize input */
-    input = 0.0F;
+    input = 0;
     
-    sprintf(inputBuffer, "%f", input);
+    sprintf(inputBuffer, "%d", input);
 
     char buf[BUFSIZ];
     freopen("/dev/null", "a", stdout);

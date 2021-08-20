@@ -7,7 +7,7 @@
 #include <cmocka.h>
 
 #include "${pathDataSet}${fileName}"
-#include "/home/raphael/DOCFILES/DoctoralFiles/Juliet/C/testcasesupport/io.c"
+#include "/home/raphael/DOCFILES/DoctoralFiles/Juliet/C1.2/testcasesupport/io.c"
 
 #define CHAR_ARRAY_SIZE 20
 
@@ -26,16 +26,16 @@ static void test_juliet_rtc(void **state)
 {
     (void)state; //unused variable
 
-    float input;
+    int input;
     /* Initialize input */
-    scanf("%f\n", &input);
+    scanf("%d\n", &input);
     
-    sprintf(inputBuffer, "%f", input);
+    sprintf(inputBuffer, "%d", input);
 
     FILE *fileAddress;
     fileAddress = fopen("log_afl_${type}.txt", "a");
     if (fileAddress != NULL){
-        fprintf(fileAddress, "%f\n", input);
+        fprintf(fileAddress, "%d\n", input);
         fclose(fileAddress);
     }
 
