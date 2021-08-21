@@ -17,8 +17,7 @@ char inputBuffer[BUFSIZ];
 ${externVar}
 ${mockedFunctions}
 extern int fscanf (FILE *__restrict __stream,
-		   const char *__restrict __format, ...) __wur
-           {
+		   const char *__restrict __format, ...){
     return inputBuffer;
 }
 char __wrap_fgets(char *__restrict __s, int __n, FILE *__restrict __stream)
@@ -31,16 +30,17 @@ static void test_juliet_rtc(void **state)
 {
     (void)state; //unused variable
 
-    int input;
-    /* Initialize input */
-    scanf("%d\n", &input);
+    float data;
+    data = 0.0F;
+    /* Initialize Data */
+    scanf("%f\n", &data);
     
-    sprintf(inputBuffer, "%d", input);
+    sprintf(inputBuffer, "%f", data);
 
     FILE *fileAddress;
     fileAddress = fopen("log_afl_${type}.txt", "a");
     if (fileAddress != NULL){
-        fprintf(fileAddress, "%d\n", input);
+        fprintf(fileAddress, "%f\n", data);
         fclose(fileAddress);
     }
 
@@ -52,7 +52,7 @@ static void test_juliet_rtc(void **state)
 
     freopen("/dev/tty", "a", stdout);
 
-    if (input != 0)
+    if (data != 0)
     {
         assert_true(1);
     }

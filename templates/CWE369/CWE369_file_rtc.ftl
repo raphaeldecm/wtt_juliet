@@ -30,11 +30,11 @@ char __wrap_fgets(char *__restrict __s, int __n, FILE *__restrict __stream)
 static void test_juliet_rtc(void **state)
 {
     (void)state; //unused variable
-    int input;
-    /* Initialize input */
-    input = 0;
+    float data;
+    /* Initialize Data */
+    data = 0.0F;
     
-    sprintf(inputBuffer, "%d", input);
+    sprintf(inputBuffer, "%f", data);
 
     char buf[BUFSIZ];
     freopen("/dev/null", "a", stdout);
@@ -44,7 +44,7 @@ static void test_juliet_rtc(void **state)
 
     freopen("/dev/tty", "a", stdout);
 
-    if (input != 0)
+    if (data != 0)
     {
         assert_true(1);
     }

@@ -58,7 +58,7 @@ public class CreateTestCases {
         this.testerName = "tester_wtt_" + cweKind;
         this.findFunction = Pattern.compile("void " + cweKind);
         this.goodFunction = "";
-        this.functionParam = "(myStruct)";
+        this.functionParam = "(data)";
     }
 
     private void start() throws Exception {
