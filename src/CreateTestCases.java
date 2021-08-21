@@ -58,7 +58,7 @@ public class CreateTestCases {
         this.testerName = "tester_wtt_" + cweKind;
         this.findFunction = Pattern.compile("void " + cweKind);
         this.goodFunction = "";
-        this.functionParam = "(input)";
+        this.functionParam = "(myStruct)";
     }
 
     private void start() throws Exception {
@@ -104,23 +104,23 @@ public class CreateTestCases {
         if (phase == 1) {
             phaseStr = "rtc";
             if (mockedFunctionList.size() > 0) {
-                command = "gcc " + tester.getAbsolutePath() + " -I" + include + " -Wl,--wrap=fgets" + mockedList
+                command = "gcc " + tester.getAbsolutePath() + " -I" + include + " -Wl,--wrap=fgets,--wrap=fscanf" + mockedList
                         + " -lcmocka -o " + kind + "_a.out";
 
             } else {
-                command = "gcc " + tester.getAbsolutePath() + " -I" + include + " -Wl,--wrap=fgets -lcmocka -o " + kind
+                command = "gcc " + tester.getAbsolutePath() + " -I" + include + " -Wl,--wrap=fgets,--wrap=fscanf -lcmocka -o " + kind
                         + "_a.out";
             }
 
         } else if (phase == 2) {
             phaseStr = "ft";
             if (mockedFunctionList.size() > 0) {
-                command = "afl-gcc " + tester.getAbsolutePath() + " -I" + include + " -Wl,--wrap=fgets" + mockedList
+                command = "afl-gcc " + tester.getAbsolutePath() + " -I" + include + " -Wl,--wrap=fgets,--wrap=fscanf" + mockedList
                         + " -lcmocka -o fuzz_" + kind;
 
             } else {
                 command = "afl-gcc " + tester.getAbsolutePath() + " -I" + include
-                        + " -Wl,--wrap=fgets -lcmocka -o fuzz_" + kind;
+                        + " -Wl,--wrap=fgets,--wrap=fscanf -lcmocka -o fuzz_" + kind;
             }
         }
         System.out.println("**** Compile command: " + command);
@@ -173,6 +173,7 @@ public class CreateTestCases {
     private void findMockedFunctions() {
         Path path = Paths.get(pathDataSet + fileName);
         Pattern findFloatFunction = Pattern.compile("float " + cweKind);
+        Pattern findIntFunction = Pattern.compile("int " + cweKind);
         List<String> linhas = new ArrayList<>();
         mockedFunctionList = new ArrayList<>();
 
@@ -205,6 +206,13 @@ public class CreateTestCases {
         }
 
         // for (String l : linhas) {
+        //     m = findIntFunction.matcher(l);
+        //     if (m.find()) {
+        //         mockedFunctionList.add(l.replaceAll(";", ""));
+        //     }
+        // }
+
+        // for (String l : linhas) {
         //     m = findFloatFunction.matcher(l);
         //     if (m.find()) {
         //         mockedFunctionList.add(l.replaceAll(";", ""));
@@ -221,14 +229,14 @@ public class CreateTestCases {
         String floatBad = "";
 
         if (cweKind.equals("CWE369")) {
-            voidGood = "{if(data != 0){printIntLine(100 / data);}else{printLine(\"This would result in a divide by zero\");}}\n";
-            voidBad = "{printIntLine(100 / data);}\n";
+            voidGood = "{int data = CWE369_Divide_by_Zero__int_fgets_modulo_68_goodB2GData;if( data != 0 ){printIntLine(100 % data);}else{printLine(\"This would result in a divide by zero\");}}\n";
+            voidBad = "{int data = CWE369_Divide_by_Zero__int_fgets_modulo_68_badData;printIntLine(100 % data);}\n";//"{printIntLine(100 / data);}\n";
 
-            floatGood = "{{char inputBuffer[CHAR_ARRAY_SIZE];if (fgets(inputBuffer, CHAR_ARRAY_SIZE, stdin) != NULL){data = (float)atof(inputBuffer);}else{printLine(\"fgets() failed.\");}}return data;}\n";
-            floatBad = "{{char inputBuffer[CHAR_ARRAY_SIZE];if (fgets(inputBuffer, CHAR_ARRAY_SIZE, stdin) != NULL){data = (float)atof(inputBuffer);}else{printLine(\"fgets() failed.\");}}return data;}\n";
+            // floatGood = "{{char inputBuffer[CHAR_ARRAY_SIZE];if (fgets(inputBuffer, CHAR_ARRAY_SIZE, stdin) != NULL){data = (float)atof(inputBuffer);}else{printLine(\"fgets() failed.\");}}return data;}\n";
+            // floatBad = "{{char inputBuffer[CHAR_ARRAY_SIZE];if (fgets(inputBuffer, CHAR_ARRAY_SIZE, stdin) != NULL){data = (float)atof(inputBuffer);}else{printLine(\"fgets() failed.\");}}return data;}\n";
 
-            String floatGood2 = "{float data = *dataPtr;if(fabs(data) > 0.000001){int result = (int)(100.0 / data);printIntLine(result);}else{printLine(\"This would result in a divide by zero\");}}\n";
-            String floatBad2 = "{float data = *dataPtr;{int result = (int)(100.0 / data);printIntLine(result);}}\n";
+            // String floatGood2 = "{float data = *dataPtr;if(fabs(data) > 0.000001){int result = (int)(100.0 / data);printIntLine(result);}else{printLine(\"This would result in a divide by zero\");}}\n";
+            // String floatBad2 = "{float data = *dataPtr;{int result = (int)(100.0 / data);printIntLine(result);}}\n";
 
             for (String string : mockedFunctionList) {
                 System.out.println("**** Mock functions: " + string);

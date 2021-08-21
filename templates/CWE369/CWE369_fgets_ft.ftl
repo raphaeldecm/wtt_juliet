@@ -16,11 +16,6 @@ char inputBuffer[BUFSIZ];
 //Mocked functions
 ${externVar}
 ${mockedFunctions}
-extern int fscanf (FILE *__restrict __stream,
-		   const char *__restrict __format, ...) __wur
-           {
-    return inputBuffer;
-}
 char __wrap_fgets(char *__restrict __s, int __n, FILE *__restrict __stream)
 {
     strcpy(__s, inputBuffer);
