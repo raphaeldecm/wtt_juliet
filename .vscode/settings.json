@@ -3,6 +3,7 @@
         "lib/**/*.jar"
     ],
     "files.associations": {
-        "pthread.h": "c"
+        "pthread.h": "c",
+        "cstdio": "c"
     }
 }

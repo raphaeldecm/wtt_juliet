@@ -95,7 +95,7 @@ public class CreateTestCases {
         String command = "";
         String phaseStr = "";
         for (String string : mockedFunctionList) {
-            //Old v replaceAll(" ", "").replaceAll("void", "")
+            // Old v replaceAll(" ", "").replaceAll("void", "")
             mockedList += ",--wrap=" + string.split(" ")[1].split("\\(")[0];
         }
 
@@ -104,23 +104,23 @@ public class CreateTestCases {
         if (phase == 1) {
             phaseStr = "rtc";
             if (mockedFunctionList.size() > 0) {
-                command = "gcc " + tester.getAbsolutePath() + " -I" + include + " -Wl,--wrap=fgets,--wrap=fscanf" + mockedList
-                        + " -lcmocka -o " + kind + "_a.out";
+                command = "gcc " + tester.getAbsolutePath() + " -I" + include + " -Wl,--wrap=fgets"
+                        + mockedList + " -lcmocka -o " + kind + "_a.out";
 
             } else {
-                command = "gcc " + tester.getAbsolutePath() + " -I" + include + " -Wl,--wrap=fgets,--wrap=fscanf -lcmocka -o " + kind
-                        + "_a.out";
+                command = "gcc " + tester.getAbsolutePath() + " -I" + include
+                        + " -Wl,--wrap=fgets -lcmocka -o " + kind + "_a.out";
             }
 
         } else if (phase == 2) {
             phaseStr = "ft";
             if (mockedFunctionList.size() > 0) {
-                command = "afl-gcc " + tester.getAbsolutePath() + " -I" + include + " -Wl,--wrap=fgets,--wrap=fscanf" + mockedList
-                        + " -lcmocka -o fuzz_" + kind;
+                command = "afl-gcc " + tester.getAbsolutePath() + " -I" + include + " -Wl,--wrap=fgets"
+                        + mockedList + " -lcmocka -o fuzz_" + kind;
 
             } else {
                 command = "afl-gcc " + tester.getAbsolutePath() + " -I" + include
-                        + " -Wl,--wrap=fgets,--wrap=fscanf -lcmocka -o fuzz_" + kind;
+                        + " -Wl,--wrap=fgets -lcmocka -o fuzz_" + kind;
             }
         }
         System.out.println("**** Compile command: " + command);
@@ -205,19 +205,22 @@ public class CreateTestCases {
             }
         }
 
-        // for (String l : linhas) {
-        //     m = findIntFunction.matcher(l);
-        //     if (m.find()) {
-        //         mockedFunctionList.add(l.replaceAll(";", ""));
-        //     }
-        // }
-
-        // for (String l : linhas) {
-        //     m = findFloatFunction.matcher(l);
-        //     if (m.find()) {
-        //         mockedFunctionList.add(l.replaceAll(";", ""));
-        //     }
-        // }
+        if (mockedFunctionList.isEmpty()) {
+            for (String l : linhas) {
+                m = findIntFunction.matcher(l);
+                if (m.find() && l.endsWith(";") && !l.startsWith("static") && !l.startsWith("extern")) {
+                    mockedFunctionList.add(l.replaceAll(";", ""));
+                }
+            }
+        }
+        if (mockedFunctionList.isEmpty()) {
+            for (String l : linhas) {
+                m = findFloatFunction.matcher(l);
+                if (m.find() && l.endsWith(";") && !l.startsWith("static") && !l.startsWith("extern")) {
+                    mockedFunctionList.add(l.replaceAll(";", ""));
+                }
+            }
+        }
 
     }
 
@@ -229,35 +232,19 @@ public class CreateTestCases {
         String floatBad = "";
 
         if (cweKind.equals("CWE369")) {
-            voidGood = "{int data = CWE369_Divide_by_Zero__int_fgets_modulo_68_goodB2GData;if( data != 0 ){printIntLine(100 % data);}else{printLine(\"This would result in a divide by zero\");}}\n";
-            voidBad = "{int data = CWE369_Divide_by_Zero__int_fgets_modulo_68_badData;printIntLine(100 % data);}\n";//"{printIntLine(100 / data);}\n";
-
-            // floatGood = "{{char inputBuffer[CHAR_ARRAY_SIZE];if (fgets(inputBuffer, CHAR_ARRAY_SIZE, stdin) != NULL){data = (float)atof(inputBuffer);}else{printLine(\"fgets() failed.\");}}return data;}\n";
-            // floatBad = "{{char inputBuffer[CHAR_ARRAY_SIZE];if (fgets(inputBuffer, CHAR_ARRAY_SIZE, stdin) != NULL){data = (float)atof(inputBuffer);}else{printLine(\"fgets() failed.\");}}return data;}\n";
-
-            // String floatGood2 = "{float data = *dataPtr;if(fabs(data) > 0.000001){int result = (int)(100.0 / data);printIntLine(result);}else{printLine(\"This would result in a divide by zero\");}}\n";
-            // String floatBad2 = "{float data = *dataPtr;{int result = (int)(100.0 / data);printIntLine(result);}}\n";
+            voidGood = "{int data = CWE369_Divide_by_Zero__int_fscanf_modulo_68_goodB2GData;if( data != 0 ){printIntLine(100 % data);}else{printLine(\"This would result in a divide by zero\");}}\n";
+            voidBad = "{int data = CWE369_Divide_by_Zero__int_fscanf_modulo_68_badData;printIntLine(100 % data);}\n";
 
             for (String string : mockedFunctionList) {
                 System.out.println("**** Mock functions: " + string);
-                //void CWE369_Divide_by_Zero__int_fgets_divide_64b_badSink(void * dataVoidPtr)
                 if (string.contains("_good")) {
-                    if (string.startsWith("float ")) {
-                        mockedFunctionsString += string.split(" ")[0] + " __wrap_"
-                                + string.replaceAll("void ", "").replaceAll("float ", "") + floatGood;
-                    } else {
-                        mockedFunctionsString += string.split(" ")[0] + " __wrap_"
-                                + string.substring(string.split(" ")[0].length()).trim() + voidGood;
-                    }
-                } else {
-                    if (string.startsWith("float ")) {
-                        mockedFunctionsString += string.split(" ")[0] + " __wrap_"
-                                + string.replaceAll("void ", "").replaceAll("float ", "") + floatBad;
-                    } else {
-                        mockedFunctionsString += string.split(" ")[0] + " __wrap_"
-                                + string.substring(string.split(" ")[0].length()).trim() + voidBad;
+                    mockedFunctionsString += string.split(" ")[0] + " __wrap_"
+                            + string.substring(string.split(" ")[0].length()).trim() + voidGood;
 
-                    }
+                } else {
+                    mockedFunctionsString += string.split(" ")[0] + " __wrap_"
+                            + string.substring(string.split(" ")[0].length()).trim() + voidBad;
+
                 }
             }
         }
@@ -283,7 +270,7 @@ public class CreateTestCases {
             if (m.find()) {
                 // void CWE369_Divide_by_Zero__float_fgets_22_good()
                 // void CWE134_Uncontrolled_Format_String__char_file_fprintf_12_bad()
-                //float CWE369_Divide_by_Zero__float_fgets_61b_goodB2GSource(float data)
+                // float CWE369_Divide_by_Zero__float_fgets_61b_goodB2GSource(float data)
 
                 if (fileName.contains("b.c") || fileName.contains("c.c") || fileName.contains("d.c")
                         || fileName.contains("e.c")) {
@@ -314,7 +301,7 @@ public class CreateTestCases {
         List<String> linhas = new ArrayList<>();
         Pattern findGoodFunction = Pattern.compile("void");
         Pattern findCWE = Pattern.compile(cweKind);
-        
+
         Matcher m;
 
         try {
@@ -357,9 +344,9 @@ public class CreateTestCases {
 
             }
         }
-        //float CWE369_Divide_by_Zero__float_fgets_61b_goodB2GSource(float data)
-        if(goodFunction.isEmpty()){
-            
+        // float CWE369_Divide_by_Zero__float_fgets_61b_goodB2GSource(float data)
+        if (goodFunction.isEmpty()) {
+
             for (String l : linhas) {
                 m = findCWE.matcher(l);
                 if (m.find()) {

@@ -16,30 +16,27 @@ char inputBuffer[BUFSIZ];
 //Mocked functions
 ${externVar}
 ${mockedFunctions}
-extern int fscanf (FILE *__restrict __stream,
-		   const char *__restrict __format, ...) __wur
-           {
-    return inputBuffer;
-}
-char __wrap_fgets(char *__restrict __s, int __n, FILE *__restrict __stream)
-{
-    strcpy(__s, inputBuffer);
-    return __s;
-}
 
 static void test_juliet_rtc(void **state)
 {
     (void)state; //unused variable
-    float data;
+    int data;
     /* Initialize Data */
-    data = 0.0F;
+    data = 0;
     
-    sprintf(inputBuffer, "%f", data);
+    FILE *inputFile;
+    inputFile = fopen("read_rtc.txt", "w");
+    if (inputFile != NULL){
+        fprintf(inputFile, "%d\n", data);
+        fclose(inputFile);
+    }
 
     char buf[BUFSIZ];
     freopen("/dev/null", "a", stdout);
     setbuf(stdout, buf);
 
+    freopen("read_rtc.txt", "r", stdin); // change the behaviour of standard input to read from a file.
+    
     ${testedFunction}();
 
     freopen("/dev/tty", "a", stdout);

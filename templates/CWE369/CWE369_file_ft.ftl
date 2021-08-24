@@ -11,42 +11,40 @@
 
 #define CHAR_ARRAY_SIZE 20
 
-char inputBuffer[BUFSIZ];
+int inputBuffer;
 
 //Mocked functions
 ${externVar}
 ${mockedFunctions}
-extern int fscanf (FILE *__restrict __stream,
-		   const char *__restrict __format, ...){
-    return inputBuffer;
-}
-char __wrap_fgets(char *__restrict __s, int __n, FILE *__restrict __stream)
-{
-    strcpy(__s, inputBuffer);
-    return __s;
-}
 
 static void test_juliet_rtc(void **state)
 {
     (void)state; //unused variable
 
-    float data;
-    data = 0.0F;
+    int data;
+    data = 0;
     /* Initialize Data */
-    scanf("%f\n", &data);
+    scanf("%d\n", &data);
     
-    sprintf(inputBuffer, "%f", data);
+    FILE *inputFile;
+    inputFile = fopen("read_ft.txt", "w");
+    if (inputFile != NULL){
+        fprintf(inputFile, "%d\n", data);
+        fclose(inputFile);
+    }
 
     FILE *fileAddress;
     fileAddress = fopen("log_afl_${type}.txt", "a");
     if (fileAddress != NULL){
-        fprintf(fileAddress, "%f\n", data);
+        fprintf(fileAddress, "%d\n", data);
         fclose(fileAddress);
     }
 
     char buf[BUFSIZ];
     freopen("/dev/null", "a", stdout);
     setbuf(stdout, buf);
+    
+    freopen("read_ft.txt", "r", stdin);
 
     ${testedFunction}();
 
