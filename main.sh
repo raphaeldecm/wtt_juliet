@@ -10,10 +10,10 @@ testers_folder="testers/"
 path_catalog="/home/raphael/DOCFILES/DoctoralFiles/WeaknessesTestingTool/wtt_juliet_catalog/"
 
 #### EXPERIMENT CONFIGURATION ####
-tester_file_ft_bad="tester_wtt_CWE369_bad_ft.c"
-tester_file_ft_good="tester_wtt_CWE369_good_ft.c"
-tester_file_rtc_bad="tester_wtt_CWE369_bad_rtc.c"
-tester_file_rtc_good="tester_wtt_CWE369_good_rtc.c"
+tester_file_ft_bad="tester_wtt_CWE190_bad_ft.c"
+tester_file_ft_good="tester_wtt_CWE190_good_ft.c"
+tester_file_rtc_bad="tester_wtt_CWE190_bad_rtc.c"
+tester_file_rtc_good="tester_wtt_CWE190_good_rtc.c"
 
 # mocked_function1="fgets"
 # mocked_function2="buffer_output"
@@ -21,7 +21,8 @@ include_folder="/home/raphael/DOCFILES/DoctoralFiles/Juliet/C1.2/testcasesupport
 
 #testcases="/home/raphael/DOCFILES/DoctoralFiles/Juliet/C1.2/testcases/CWE121_Stack_Based_Buffer_Overflow/wtt/"
 #testcases="/home/raphael/DOCFILES/DoctoralFiles/Juliet/C1.2/testcases/CWE134_Uncontrolled_Format_String/wtt/"
-testcases="/home/raphael/DOCFILES/DoctoralFiles/Juliet/C1.2/testcases/CWE369_Divide_by_Zero/wtt/"
+#testcases="/home/raphael/DOCFILES/DoctoralFiles/Juliet/C1.2/testcases/CWE369_Divide_by_Zero/wtt/"
+testcases="/home/raphael/DOCFILES/DoctoralFiles/Juliet/C1.2/testcases/CWE190_Integer_Overflow/wtt/"
 #testcases="/home/raphael/DOCFILES/DoctoralFiles/Juliet/C1.2/testcases/CWE121_Stack_Based_Buffer_Overflow/wtt/"
 
 echo -e '\nLendo diretório [@] -----------------------------------'

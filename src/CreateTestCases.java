@@ -58,7 +58,7 @@ public class CreateTestCases {
         this.testerName = "tester_wtt_" + cweKind;
         this.findFunction = Pattern.compile("void " + cweKind);
         this.goodFunction = "";
-        this.functionParam = "(data)";
+        this.functionParam = "";
     }
 
     private void start() throws Exception {
@@ -104,19 +104,19 @@ public class CreateTestCases {
         if (phase == 1) {
             phaseStr = "rtc";
             if (mockedFunctionList.size() > 0) {
-                command = "gcc " + tester.getAbsolutePath() + " -I" + include + " -Wl,--wrap=fgets"
-                        + mockedList + " -lcmocka -o " + kind + "_a.out";
+                command = "gcc " + tester.getAbsolutePath() + " -I" + include + " -Wl,--wrap=fgets" + mockedList
+                        + " -lcmocka -o " + kind + "_a.out";
 
             } else {
-                command = "gcc " + tester.getAbsolutePath() + " -I" + include
-                        + " -Wl,--wrap=fgets -lcmocka -o " + kind + "_a.out";
+                command = "gcc " + tester.getAbsolutePath() + " -I" + include + " -Wl,--wrap=fgets -lcmocka -o " + kind
+                        + "_a.out";
             }
 
         } else if (phase == 2) {
             phaseStr = "ft";
             if (mockedFunctionList.size() > 0) {
-                command = "afl-gcc " + tester.getAbsolutePath() + " -I" + include + " -Wl,--wrap=fgets"
-                        + mockedList + " -lcmocka -o fuzz_" + kind;
+                command = "afl-gcc " + tester.getAbsolutePath() + " -I" + include + " -Wl,--wrap=fgets" + mockedList
+                        + " -lcmocka -o fuzz_" + kind;
 
             } else {
                 command = "afl-gcc " + tester.getAbsolutePath() + " -I" + include
@@ -157,7 +157,11 @@ public class CreateTestCases {
         for (String l : linhas) {
             m = findExtern.matcher(l);
             if (m.find()) {
-                externVarList.add(l.replaceAll(";", " = 0;").replaceAll("extern ", ""));
+                if(l.contains("_bad")){
+                    externVarList.add(l.replaceAll(";", " = 1;").replaceAll("extern ", ""));
+                } else {
+                    externVarList.add(l.replaceAll(";", " = 0;").replaceAll("extern ", ""));
+                }
             }
         }
     }
@@ -186,25 +190,34 @@ public class CreateTestCases {
             e.printStackTrace();
         }
 
-        for (String l : linhas) {
-            m = findFunction.matcher(l);
-            if (fileName.contains("a.c")) {
-                if (m.find()) {
-                    if (l.endsWith(";") && !l.startsWith("void " + badFunction.split("\\(")[0] + "(")
-                            && !l.startsWith("void " + goodFunction.split("\\(")[0] + "(")) {
-                        mockedFunctionList.add(l.replaceAll(";", ""));
-                    }
-                }
-            } else {
-                if (m.find()) {
-                    if (l.endsWith(";") && !l.startsWith("void " + badFunction.split("\\(")[0] + "(")
-                            && !l.startsWith("void " + goodFunction.split("\\(")[0] + "(")) {
-                        mockedFunctionList.add(l.replaceAll(";", ""));
-                    }
+        // for (String l : linhas) {
+        // m = findFunction.matcher(l);
+        // if (fileName.contains("a.c")) {
+        // if (m.find()) {
+        // if (l.endsWith(";") && !l.startsWith("void " + badFunction.split("\\(")[0] +
+        // "(")
+        // && !l.startsWith("void " + goodFunction.split("\\(")[0] + "(")) {
+        // mockedFunctionList.add(l.replaceAll(";", ""));
+        // }
+        // }
+        // } else {
+        // if (m.find()) {
+        // if (l.endsWith(";") && !l.startsWith("void " + badFunction.split("\\(")[0] +
+        // "(")
+        // && !l.startsWith("void " + goodFunction.split("\\(")[0] + "(")) {
+        // mockedFunctionList.add(l.replaceAll(";", ""));
+        // }
+        // }
+        // }
+        // }
+        if (mockedFunctionList.isEmpty()) {
+            for (String l : linhas) {
+                m = findFunction.matcher(l);
+                if (m.find() && l.endsWith(";") && !l.startsWith("static") && !l.startsWith("extern")) {
+                    mockedFunctionList.add(l.replaceAll(";", ""));
                 }
             }
         }
-
         if (mockedFunctionList.isEmpty()) {
             for (String l : linhas) {
                 m = findIntFunction.matcher(l);
@@ -228,26 +241,23 @@ public class CreateTestCases {
         mockedFunctionsString = "";
         String voidGood = "";
         String voidBad = "";
-        String floatGood = "";
-        String floatBad = "";
 
-        if (cweKind.equals("CWE369")) {
-            voidGood = "{int data = CWE369_Divide_by_Zero__int_fscanf_modulo_68_goodB2GData;if( data != 0 ){printIntLine(100 % data);}else{printLine(\"This would result in a divide by zero\");}}\n";
-            voidBad = "{int data = CWE369_Divide_by_Zero__int_fscanf_modulo_68_badData;printIntLine(100 % data);}\n";
+        voidGood = "{if (data < CHAR_MAX){char result = data + 1;printHexCharLine(result);}else{printLine(\"data value is too large to perform arithmetic safely.\");}}\n";
+        voidBad = "{char result = data + 1;printHexCharLine(result);}\n";
 
-            for (String string : mockedFunctionList) {
-                System.out.println("**** Mock functions: " + string);
-                if (string.contains("_good")) {
-                    mockedFunctionsString += string.split(" ")[0] + " __wrap_"
-                            + string.substring(string.split(" ")[0].length()).trim() + voidGood;
+        for (String string : mockedFunctionList) {
+            System.out.println("**** Mock functions: " + string);
+            if (string.contains("_good")) {
+                mockedFunctionsString += string.split(" ")[0] + " __wrap_"
+                        + string.substring(string.split(" ")[0].length()).trim() + voidGood;
 
-                } else {
-                    mockedFunctionsString += string.split(" ")[0] + " __wrap_"
-                            + string.substring(string.split(" ")[0].length()).trim() + voidBad;
+            } else {
+                mockedFunctionsString += string.split(" ")[0] + " __wrap_"
+                        + string.substring(string.split(" ")[0].length()).trim() + voidBad;
 
-                }
             }
         }
+
     }
 
     public void findBadFunction() throws FileNotFoundException {
@@ -268,16 +278,20 @@ public class CreateTestCases {
         for (String l : linhas) {
             m = findCWE.matcher(l);
             if (m.find()) {
-                // void CWE369_Divide_by_Zero__float_fgets_22_good()
-                // void CWE134_Uncontrolled_Format_String__char_file_fprintf_12_bad()
-                // float CWE369_Divide_by_Zero__float_fgets_61b_goodB2GSource(float data)
 
                 if (fileName.contains("b.c") || fileName.contains("c.c") || fileName.contains("d.c")
                         || fileName.contains("e.c")) {
 
                     if (l.contains("_bad") && !l.endsWith(";")) {
                         badFunction = l.split(" ")[1].split("\\(")[0];
+
+                        functionParam = l.split(" ")[2];
+                        StringBuilder stringBuilder = new StringBuilder(functionParam);
+                        stringBuilder.insert(functionParam.length() - functionParam.length(), '(');
+                        functionParam = stringBuilder.toString();
+
                         badFunction += functionParam + ";//";
+
                         System.out.println("******" + badFunction);
                         break;
                     }
@@ -322,6 +336,12 @@ public class CreateTestCases {
                     if (l.contains("B2G") && !l.endsWith(";")) {
                         if (!l.endsWith("()")) {
                             goodFunction = l.split(" ")[1].split("\\(")[0];
+
+                            functionParam = l.split(" ")[2];
+                            StringBuilder stringBuilder = new StringBuilder(functionParam);
+                            stringBuilder.insert(functionParam.length() - functionParam.length(), '(');
+                            functionParam = stringBuilder.toString();
+
                             goodFunction += functionParam + ";//";
                         } else {
                             goodFunction = l.split(" ")[1].split("\\(")[0];
@@ -333,6 +353,12 @@ public class CreateTestCases {
                     if (l.contains("B2G") && !l.endsWith(";")) {
                         if (!l.endsWith("()")) {
                             goodFunction = l.split(" ")[2].split("\\(")[0];
+
+                            functionParam = l.split(" ")[2];
+                            StringBuilder stringBuilder = new StringBuilder(functionParam);
+                            stringBuilder.insert(functionParam.length() - functionParam.length(), '(');
+                            functionParam = stringBuilder.toString();
+
                             goodFunction += functionParam + ";//";
                         } else {
                             goodFunction = l.split(" ")[2].split("\\(")[0];
@@ -344,7 +370,7 @@ public class CreateTestCases {
 
             }
         }
-        // float CWE369_Divide_by_Zero__float_fgets_61b_goodB2GSource(float data)
+
         if (goodFunction.isEmpty()) {
 
             for (String l : linhas) {
@@ -397,7 +423,7 @@ public class CreateTestCases {
             root.put("mockedFunctions", "//");
         }
 
-        Template tmpl = cfg.getTemplate(cweKind + "_file_ft.ftl");
+        Template tmpl = cfg.getTemplate(cweKind + "_ft.ftl");
 
         File file = new File(pathExp + folderFiles + "/testers/" + testerName + "_bad_ft.c");
         Writer fileWriter = new FileWriter(file);
@@ -443,7 +469,7 @@ public class CreateTestCases {
             root.put("mockedFunctions", "//");
         }
 
-        Template tmpl = cfg.getTemplate(cweKind + "_file_ft.ftl");
+        Template tmpl = cfg.getTemplate(cweKind + "_ft.ftl");
 
         File file = new File(pathExp + folderFiles + "/testers/" + testerName + "_good_ft.c");
         Writer fileWriter = new FileWriter(file);
@@ -487,7 +513,7 @@ public class CreateTestCases {
             root.put("mockedFunctions", "//");
         }
 
-        Template tmpl = cfg.getTemplate(cweKind + "_file_rtc.ftl");
+        Template tmpl = cfg.getTemplate(cweKind + "_rtc.ftl");
 
         File file = new File(pathExp + folderFiles + "/testers/" + testerName + "_good_rtc.c");
         Writer fileWriter = new FileWriter(file);
@@ -513,7 +539,7 @@ public class CreateTestCases {
         cfg.setWrapUncheckedExceptions(true);
         cfg.setFallbackOnNullLoopVariable(false);
 
-        Template tmpl = cfg.getTemplate(cweKind + "_file_rtc.ftl");
+        Template tmpl = cfg.getTemplate(cweKind + "_rtc.ftl");
         Map<String, Object> root = new HashMap<>();
 
         // Put string "user" into the root

@@ -7,48 +7,62 @@
 #include <cmocka.h>
 
 #include "${pathDataSet}${fileName}"
-#include "/home/raphael/DOCFILES/DoctoralFiles/Juliet/C/testcasesupport/io.c"
+#include "/home/raphael/DOCFILES/DoctoralFiles/Juliet/C1.2/testcasesupport/io.c"
 
 #define CHAR_ARRAY_SIZE 20
 
-char inputBuffer[BUFSIZ];
+int inputBuffer;
 
 //Mocked functions
 ${externVar}
 ${mockedFunctions}
-char __wrap_fgets(char *__restrict __s, int __n, FILE *__restrict __stream)
-{
-    strcpy(__s, inputBuffer);
-    return __s;
-}
 
 static void test_juliet_rtc(void **state)
 {
     (void)state; //unused variable
 
-    int input;
-    scanf("%d\n", &input);
+    char data;
+    data = ' ';
+    scanf("%c\n", &data);
+    
+    char charHex[CHAR_MAX + 1];
+    sprintf(charHex, "%02x", data + 1);
 
-    sprintf(inputBuffer, "%d", input);
+    FILE *inputFile;
+    inputFile = fopen("read_ft.txt", "w");
+    if (inputFile != NULL){
+        fprintf(inputFile, "%c\n", data);
+        fclose(inputFile);
+    }
 
     FILE *fileAddress;
     fileAddress = fopen("log_afl_${type}.txt", "a");
     if (fileAddress != NULL){
-        fprintf(fileAddress, "%d\n", input);
+        fprintf(fileAddress, "%c\n", data);
         fclose(fileAddress);
     }
 
     char buf[BUFSIZ];
     freopen("/dev/null", "a", stdout);
     setbuf(stdout, buf);
+    
+    freopen("read_ft.txt", "r", stdin);
 
     ${testedFunction}();
-    
+
     freopen("/dev/tty", "a", stdout);
 
-    int bufI = atoi(buf);
-    
-    assert_true(bufI >= 0);
+    char *pos;
+    if ((pos = strchr(buf, '\n')) != NULL)
+    {
+        *pos = '\0';
+    }
+    if(strcmp(buf, "data value is too large to perform arithmetic safely.") == 0){
+        assert_string_equal(buf, "data value is too large to perform arithmetic safely.");
+    } else {
+        assert_string_equal(buf, charHex);
+    }
+
 }
 
 int setup(void **state){
