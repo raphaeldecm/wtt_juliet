@@ -20,7 +20,7 @@ static void test_juliet_rtc(void **state)
     data = '';
 
     char charHex[CHAR_MAX + 1];
-    sprintf(charHex, "%02x", data * 2);
+    sprintf(charHex, "%02x", data + 1);
     
     FILE *inputFile;
     inputFile = fopen("read_rtc.txt", "w");
@@ -46,10 +46,8 @@ static void test_juliet_rtc(void **state)
     }
     if(strcmp(buf, "data value is too large to perform arithmetic safely.") == 0){
         assert_string_equal(buf, "data value is too large to perform arithmetic safely.");
-    } else if(strcmp(buf, charHex) == 0){
-        assert_string_equal(buf, charHex);
     } else {
-        assert_false(0);
+        assert_string_equal(buf, charHex);
     }
 
 }
