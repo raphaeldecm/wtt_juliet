@@ -49,7 +49,7 @@ static void test_juliet_rtc(void **state)
     } else if(strcmp(buf, charHex) == 0){
         assert_string_equal(buf, charHex);
     } else {
-        assert_false(0);
+        assert_false(1);
     }
 
 }
