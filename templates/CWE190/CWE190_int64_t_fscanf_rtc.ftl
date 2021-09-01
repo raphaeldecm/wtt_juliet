@@ -13,43 +13,33 @@
 ${externVar}
 ${mockedFunctions}
 
-#define CHAR_ARRAY_SIZE 20
-
-char inputBuffer[CHAR_ARRAY_SIZE] = "";
-
-char __wrap_fgets(char *__restrict __s, int __n, FILE *__restrict __stream)
-{
-    strcpy(__s, inputBuffer);
-    return __s;
-}
-
 static void test_juliet_rtc(void **state)
 {
     (void)state; //unused variable
-
-    int data;
-    data = 0;
+    int64_t data;
+    data = 214147487;
+    int64_t result = data * data;
     
-    scanf("%d\n", &data);
+    char charRes[CHAR_MAX];
+    sprintf(charRes, "%lld", result);
     
-    int result = data * data;
-    sprintf(inputBuffer, "%d", data);
-
-    FILE *fileAddress;
-    fileAddress = fopen("log_afl_${type}.txt", "a");
-    if (fileAddress != NULL){
-        fprintf(fileAddress, "%d\n", data);
-        fclose(fileAddress);
+    FILE *inputFile;
+    inputFile = fopen("read_rtc.txt", "w");
+    if (inputFile != NULL){
+        fprintf(inputFile, "%lld\n", data);
+        fclose(inputFile);
     }
 
     char buf[BUFSIZ];
     freopen("/dev/null", "a", stdout);
     setbuf(stdout, buf);
+
+    freopen("read_rtc.txt", "r", stdin); // change the behaviour of standard input to read from a file.
     
     ${testedFunction}();
 
     freopen("/dev/tty", "a", stdout);
-
+    
     char *pos;
     if ((pos = strchr(buf, '\n')) != NULL)
     {
@@ -58,7 +48,7 @@ static void test_juliet_rtc(void **state)
     if(strcmp(buf, "data value is too large to perform arithmetic safely.") == 0){
         assert_string_equal(buf, "data value is too large to perform arithmetic safely.");
     } else {
-        assert_true(atoi(buf) >= 0);
+        ${assert}
     }
 
 }

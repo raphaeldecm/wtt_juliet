@@ -251,8 +251,8 @@ public class CreateTestCases {
         String voidGood = "";
         String voidBad = "";
 
-        voidGood = "{char data = CWE190_Integer_Overflow__char_fscanf_add_68_goodB2GData;if (data < CHAR_MAX){char result = data + 1;printHexCharLine(result);}else{printLine(\"data value is too large to perform arithmetic safely.\");}}\n";
-        voidBad = "{char data = CWE190_Integer_Overflow__char_fscanf_add_68_badData;char result = data + 1;printHexCharLine(result);}\n";
+        voidGood = "{if (abs((long)data) <= (long)sqrt((double)INT_MAX)){int result = data * data;printIntLine(result);}else{printLine(\"data value is too large to perform arithmetic safely.\");}}\n";
+        voidBad = "{int result = data * data;printIntLine(result);}\n";
 
         for (String string : mockedFunctionList) {
             System.out.println("**** Mock functions: " + string);
@@ -298,7 +298,7 @@ public class CreateTestCases {
                         if (l.startsWith("static ")) {
                             functionParam = l.split(" ")[3];
                         } else if (l.contains("* ")) {
-                            functionParam = l.split("\\*")[1].trim().replace("dataVoidPtr", "data");
+                            functionParam = l.split("\\*")[1].trim().replace("dataVoidPtr", "data").replaceAll("dataPtr", "data");
                         } else {
                             functionParam = l.split(" ")[2].replace("[]", "");
                         }
@@ -361,7 +361,7 @@ public class CreateTestCases {
                             if (l.startsWith("static ")) {
                                 functionParam = l.split(" ")[3];
                             } else if (l.contains("* ")) {
-                                functionParam = l.split("\\*")[1].trim().replace("dataVoidPtr", "data");
+                                functionParam = l.split("\\*")[1].trim().replace("dataVoidPtr", "data").replaceAll("dataPtr", "data");
                             } else {
                                 functionParam = l.split(" ")[2].replace("[]", "");
                             }
@@ -389,7 +389,7 @@ public class CreateTestCases {
                             if (l.startsWith("static ")) {
                                 functionParam = l.split(" ")[3];
                             } else if (l.contains("* ")) {
-                                functionParam = l.split("\\*")[1].trim().replace("dataVoidPtr", "data");
+                                functionParam = l.split("\\*")[1].trim().replace("dataVoidPtr", "data").replaceAll("dataPtr", "data");
                             } else {
                                 functionParam = l.split(" ")[2].replace("[]", "");
                             }
@@ -464,6 +464,8 @@ public class CreateTestCases {
         } else {
             root.put("mockedFunctions", "//");
         }
+        
+        //root.put("assert", "assert_true(atoi(buf) >= 0);");
 
         Template tmpl = cfg.getTemplate(cweKind + "_ft.ftl");
 
@@ -510,6 +512,8 @@ public class CreateTestCases {
         } else {
             root.put("mockedFunctions", "//");
         }
+        
+        //root.put("assert", "assert_string_equal(buf, charRes);");
 
         Template tmpl = cfg.getTemplate(cweKind + "_ft.ftl");
 
@@ -554,6 +558,8 @@ public class CreateTestCases {
         } else {
             root.put("mockedFunctions", "//");
         }
+
+        //root.put("assert", "assert_string_equal(buf, charRes);");
 
         Template tmpl = cfg.getTemplate(cweKind + "_rtc.ftl");
 
@@ -600,6 +606,9 @@ public class CreateTestCases {
         } else {
             root.put("mockedFunctions", "//");
         }
+
+        //root.put("assert", "assert_true(atoi(buf) >= 0);");
+
         File file = new File(pathExp + folderFiles + "/testers/" + testerName + "_bad_rtc.c");
         Writer fileWriter = new FileWriter(file);
 

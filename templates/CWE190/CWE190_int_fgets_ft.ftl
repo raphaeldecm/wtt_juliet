@@ -32,7 +32,7 @@ static void test_juliet_rtc(void **state)
     
     scanf("%d\n", &data);
     
-    int result = data * data;
+    int result = data + 1;
     sprintf(inputBuffer, "%d", data);
 
     FILE *fileAddress;
@@ -58,7 +58,7 @@ static void test_juliet_rtc(void **state)
     if(strcmp(buf, "data value is too large to perform arithmetic safely.") == 0){
         assert_string_equal(buf, "data value is too large to perform arithmetic safely.");
     } else {
-        assert_true(atoi(buf) >= 0);
+        ${assert}
     }
 
 }

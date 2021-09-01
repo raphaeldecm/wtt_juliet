@@ -26,21 +26,11 @@ char __wrap_fgets(char *__restrict __s, int __n, FILE *__restrict __stream)
 static void test_juliet_rtc(void **state)
 {
     (void)state; //unused variable
-
     int data;
-    data = 0;
-    
-    scanf("%d\n", &data);
-    
-    int result = data * data;
-    sprintf(inputBuffer, "%d", data);
+    data = INT_MAX;
+    int result = data + 1;
 
-    FILE *fileAddress;
-    fileAddress = fopen("log_afl_${type}.txt", "a");
-    if (fileAddress != NULL){
-        fprintf(fileAddress, "%d\n", data);
-        fclose(fileAddress);
-    }
+    sprintf(inputBuffer, "%d", data);
 
     char buf[BUFSIZ];
     freopen("/dev/null", "a", stdout);
@@ -49,7 +39,7 @@ static void test_juliet_rtc(void **state)
     ${testedFunction}();
 
     freopen("/dev/tty", "a", stdout);
-
+    
     char *pos;
     if ((pos = strchr(buf, '\n')) != NULL)
     {
@@ -58,7 +48,7 @@ static void test_juliet_rtc(void **state)
     if(strcmp(buf, "data value is too large to perform arithmetic safely.") == 0){
         assert_string_equal(buf, "data value is too large to perform arithmetic safely.");
     } else {
-        assert_true(atoi(buf) >= 0);
+        ${assert}
     }
 
 }
