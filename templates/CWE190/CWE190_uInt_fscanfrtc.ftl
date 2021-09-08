@@ -16,16 +16,16 @@ ${mockedFunctions}
 static void test_juliet_rtc(void **state)
 {
     (void)state; //unused variable
-    char data;
-    data = '';
-
-    char charHex[CHAR_MAX + 1];
-    sprintf(charHex, "%02x", data * data);
+    unsigned int data;
+    data = 3909528228;
+    
+    char charRes[CHAR_MAX];
+    sprintf(charRes, "%u", data * data);
     
     FILE *inputFile;
     inputFile = fopen("read_rtc.txt", "w");
     if (inputFile != NULL){
-        fprintf(inputFile, "%c\n", data);
+        fprintf(inputFile, "%u\n", data);
         fclose(inputFile);
     }
 
@@ -34,8 +34,7 @@ static void test_juliet_rtc(void **state)
     setbuf(stdout, buf);
 
     freopen("read_rtc.txt", "r", stdin); // change the behaviour of standard input to read from a file.
-    CWE190_Integer_Overflow__char_fscanf_square_67_structType myStruct;
-myStruct.structFirst = data;
+    
     ${testedFunction}();
 
     freopen("/dev/tty", "a", stdout);
@@ -47,8 +46,10 @@ myStruct.structFirst = data;
     }
     if(strcmp(buf, "data value is too large to perform arithmetic safely.") == 0){
         assert_string_equal(buf, "data value is too large to perform arithmetic safely.");
+    } else if(data > 0) {
+        ${assert}
     } else {
-        assert_string_equal(buf, charHex);
+        assert_true(1);
     }
 
 }

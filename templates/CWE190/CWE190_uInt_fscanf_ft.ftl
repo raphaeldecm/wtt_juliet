@@ -21,26 +21,24 @@ static void test_juliet_rtc(void **state)
 {
     (void)state; //unused variable
 
-    int64_t data;
-    data = 0LL;
-    scanf("%lld\n", &data);
-
-    int64_t result = data * data;
+    unsigned int data;
+    data = 0;
+    scanf("%u\n", &data);
     
     char charRes[CHAR_MAX + 1];
-    sprintf(charRes, "%lld", result);
+    sprintf(charRes, "%u", data * data);
 
     FILE *inputFile;
     inputFile = fopen("read_ft.txt", "w");
     if (inputFile != NULL){
-        fprintf(inputFile, "%lld\n", data);
+        fprintf(inputFile, "%u\n", data);
         fclose(inputFile);
     }
 
     FILE *fileAddress;
     fileAddress = fopen("log_afl_${type}.txt", "a");
     if (fileAddress != NULL){
-        fprintf(fileAddress, "%lld\n", data);
+        fprintf(fileAddress, "%u\n", data);
         fclose(fileAddress);
     }
 
@@ -49,7 +47,7 @@ static void test_juliet_rtc(void **state)
     setbuf(stdout, buf);
     
     freopen("read_ft.txt", "r", stdin);
-    
+
     ${testedFunction}();
 
     freopen("/dev/tty", "a", stdout);
@@ -61,8 +59,10 @@ static void test_juliet_rtc(void **state)
     }
     if(strcmp(buf, "data value is too large to perform arithmetic safely.") == 0){
         assert_string_equal(buf, "data value is too large to perform arithmetic safely.");
-    } else {
+    } else if(data > 0) {
         ${assert}
+    } else {
+        assert_true(1);
     }
 
 }

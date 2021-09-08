@@ -99,8 +99,6 @@ public class CreateTestCases {
             mockedList += ",--wrap=" + string.split(" ")[1].split("\\(")[0];
         }
 
-        // gcc $testers$tester_bad -I$include -Wl,--wrap=$mock1 -lcmocka -o bad_a.out 2>
-        // output/rtc_bad_err.txt
         if (phase == 1) {
             phaseStr = "rtc";
             if (mockedFunctionList.size() > 0) {
@@ -191,26 +189,6 @@ public class CreateTestCases {
             e.printStackTrace();
         }
 
-        // for (String l : linhas) {
-        // m = findFunction.matcher(l);
-        // if (fileName.contains("a.c")) {
-        // if (m.find()) {
-        // if (l.endsWith(";") && !l.startsWith("void " + badFunction.split("\\(")[0] +
-        // "(")
-        // && !l.startsWith("void " + goodFunction.split("\\(")[0] + "(")) {
-        // mockedFunctionList.add(l.replaceAll(";", ""));
-        // }
-        // }
-        // } else {
-        // if (m.find()) {
-        // if (l.endsWith(";") && !l.startsWith("void " + badFunction.split("\\(")[0] +
-        // "(")
-        // && !l.startsWith("void " + goodFunction.split("\\(")[0] + "(")) {
-        // mockedFunctionList.add(l.replaceAll(";", ""));
-        // }
-        // }
-        // }
-        // }
         if (mockedFunctionList.isEmpty()) {
             for (String l : linhas) {
                 m = findFunction.matcher(l);
@@ -251,8 +229,8 @@ public class CreateTestCases {
         String voidGood = "";
         String voidBad = "";
 
-        voidGood = "{if (abs((long)data) <= (long)sqrt((double)INT_MAX)){int result = data * data;printIntLine(result);}else{printLine(\"data value is too large to perform arithmetic safely.\");}}\n";
-        voidBad = "{int result = data * data;printIntLine(result);}\n";
+        voidGood = "{if (data < (LLONG_MAX/2)){int64_t result = data * 2;printLongLongLine(result);}else{printLine(\"data value is too large to perform arithmetic safely.\");}}\n";
+        voidBad = "{int64_t result = data * 2;printLongLongLine(result);}\n";
 
         for (String string : mockedFunctionList) {
             System.out.println("**** Mock functions: " + string);
@@ -299,6 +277,8 @@ public class CreateTestCases {
                             functionParam = l.split(" ")[3];
                         } else if (l.contains("* ")) {
                             functionParam = l.split("\\*")[1].trim().replace("dataVoidPtr", "data").replaceAll("dataPtr", "data");
+                        } else if (l.contains("unsigned ")) {
+                            functionParam = l.split(" ")[3].replace("[]", "");;
                         } else {
                             functionParam = l.split(" ")[2].replace("[]", "");
                         }
@@ -362,6 +342,8 @@ public class CreateTestCases {
                                 functionParam = l.split(" ")[3];
                             } else if (l.contains("* ")) {
                                 functionParam = l.split("\\*")[1].trim().replace("dataVoidPtr", "data").replaceAll("dataPtr", "data");
+                            } else if (l.contains("unsigned ")) {
+                                functionParam = l.split(" ")[3].replace("[]", "");;
                             } else {
                                 functionParam = l.split(" ")[2].replace("[]", "");
                             }
@@ -465,7 +447,7 @@ public class CreateTestCases {
             root.put("mockedFunctions", "//");
         }
         
-        //root.put("assert", "assert_true(atoi(buf) >= 0);");
+        root.put("assert", "assert_true(atoi(buf) > 0);");
 
         Template tmpl = cfg.getTemplate(cweKind + "_ft.ftl");
 
@@ -513,8 +495,9 @@ public class CreateTestCases {
             root.put("mockedFunctions", "//");
         }
         
-        //root.put("assert", "assert_string_equal(buf, charRes);");
-
+        //root.put("assert", "assert_int_equal(atoi(buf), result);");
+        root.put("assert", "assert_string_equal(buf, charRes);");
+        
         Template tmpl = cfg.getTemplate(cweKind + "_ft.ftl");
 
         File file = new File(pathExp + folderFiles + "/testers/" + testerName + "_good_ft.c");
@@ -559,8 +542,9 @@ public class CreateTestCases {
             root.put("mockedFunctions", "//");
         }
 
-        //root.put("assert", "assert_string_equal(buf, charRes);");
-
+        //root.put("assert", "assert_int_equal(atoi(buf), result);");
+        root.put("assert", "assert_string_equal(buf, charRes);");
+        
         Template tmpl = cfg.getTemplate(cweKind + "_rtc.ftl");
 
         File file = new File(pathExp + folderFiles + "/testers/" + testerName + "_good_rtc.c");
@@ -607,7 +591,7 @@ public class CreateTestCases {
             root.put("mockedFunctions", "//");
         }
 
-        //root.put("assert", "assert_true(atoi(buf) >= 0);");
+        root.put("assert", "assert_true(atoi(buf) > 0);");
 
         File file = new File(pathExp + folderFiles + "/testers/" + testerName + "_bad_rtc.c");
         Writer fileWriter = new FileWriter(file);
