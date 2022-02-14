@@ -13,29 +13,41 @@
 ${externVar}
 ${mockedFunctions}
 
+#define CHAR_ARRAY_SIZE 20
+
+char inputBuffer[CHAR_ARRAY_SIZE] = "";
+
+char __wrap_fgets(char *__restrict __s, int __n, FILE *__restrict __stream)
+{
+    strcpy(__s, inputBuffer);
+    return __s;
+}
+
 static void test_juliet_rtc(void **state)
 {
     (void)state; //unused variable
-    char data;
-    data = '';
-
-    char charHex[CHAR_MAX + 1];
-    sprintf(charHex, "%02x", data * data);
     
-    FILE *inputFile;
-    inputFile = fopen("read_rtc.txt", "w");
-    if (inputFile != NULL){
-        fprintf(inputFile, "%c\n", data);
-        fclose(inputFile);
+    int data;
+    data = 0;
+
+    scanf("%d\n", &data);
+
+    CWE121_Stack_Based_Buffer_Overflow__CWE129_fgets_67_structType myStruct;
+myStruct.structFirst = data;
+
+    sprintf(inputBuffer, "%d", data);
+
+    FILE *fileAddress;
+    fileAddress = fopen("log_afl_${type}.txt", "a");
+    if (fileAddress != NULL){
+        fprintf(fileAddress, "%d\n", data);
+        fclose(fileAddress);
     }
 
     char buf[BUFSIZ];
     freopen("/dev/null", "a", stdout);
     setbuf(stdout, buf);
-
-    freopen("read_rtc.txt", "r", stdin); // change the behaviour of standard input to read from a file.
-    CWE190_Integer_Overflow__char_fscanf_square_67_structType myStruct;
-myStruct.structFirst = data;
+    
     ${testedFunction}();
 
     freopen("/dev/tty", "a", stdout);
@@ -45,12 +57,15 @@ myStruct.structFirst = data;
     {
         *pos = '\0';
     }
-    if(strcmp(buf, "data value is too large to perform arithmetic safely.") == 0){
-        assert_string_equal(buf, "data value is too large to perform arithmetic safely.");
-    } else {
-        assert_string_equal(buf, charHex);
-    }
 
+    <#--  if(strcmp(buf, "data value is too large to perform subtraction.") == 0){
+        assert_string_equal(buf, "data value is too large to perform subtraction.");
+    } else if(data < 0){
+        assert_true(atoi(buf) < 0);
+    } else {
+        assert_true(1);
+    }  -->
+    assert_true(1);
 }
 
 int setup(void **state){

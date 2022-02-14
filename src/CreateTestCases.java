@@ -40,6 +40,7 @@ public class CreateTestCases {
     private List<String> mockedFunctionList;
     private List<String> externVarList;
     private String functionParam;
+    private String fgetsMock;
 
     public static void main(String[] args) throws Exception {
         pathDataSet = args[0];
@@ -59,6 +60,7 @@ public class CreateTestCases {
         this.findFunction = Pattern.compile("void " + cweKind);
         this.goodFunction = "";
         this.functionParam = "";
+        this.fgetsMock = "-Wl";//"-Wl,--wrap=fgets";
     }
 
     private void start() throws Exception {
@@ -102,23 +104,23 @@ public class CreateTestCases {
         if (phase == 1) {
             phaseStr = "rtc";
             if (mockedFunctionList.size() > 0) {
-                command = "gcc " + tester.getAbsolutePath() + " -I" + include + " -Wl,--wrap=fgets" + mockedList
+                command = "gcc " + tester.getAbsolutePath() + " -I" + include + " " + fgetsMock + mockedList
                         + " -lcmocka -o " + kind + "_a.out";
 
             } else {
-                command = "gcc " + tester.getAbsolutePath() + " -I" + include + " -Wl,--wrap=fgets -lcmocka -o " + kind
+                command = "gcc " + tester.getAbsolutePath() + " -I" + include + " " + "  -lcmocka -o " + kind
                         + "_a.out";
             }
 
         } else if (phase == 2) {
             phaseStr = "ft";
             if (mockedFunctionList.size() > 0) {
-                command = "afl-gcc " + tester.getAbsolutePath() + " -I" + include + " -Wl,--wrap=fgets" + mockedList
+                command = "afl-gcc " + tester.getAbsolutePath() + " -I" + include + " " + fgetsMock + mockedList
                         + " -lcmocka -o fuzz_" + kind;
 
             } else {
                 command = "afl-gcc " + tester.getAbsolutePath() + " -I" + include
-                        + " -Wl,--wrap=fgets -lcmocka -o fuzz_" + kind;
+                        + " " + "  -lcmocka -o fuzz_" + kind;
             }
         }
         System.out.println("**** Compile command: " + command);
@@ -176,7 +178,8 @@ public class CreateTestCases {
         Path path = Paths.get(pathDataSet + fileName);
         Pattern findFloatFunction = Pattern.compile("float " + cweKind);
         Pattern findIntFunction = Pattern.compile("int " + cweKind);
-        Pattern findCharFunction = Pattern.compile("char " + cweKind);
+        Pattern findCharFunction = Pattern.compile("char *");
+        
         List<String> linhas = new ArrayList<>();
         mockedFunctionList = new ArrayList<>();
 
@@ -200,8 +203,8 @@ public class CreateTestCases {
         if (mockedFunctionList.isEmpty()) {
             for (String l : linhas) {
                 m = findCharFunction.matcher(l);
-                if (m.find() && l.endsWith(";") && !l.startsWith("static") && !l.startsWith("extern")) {
-                    mockedFunctionList.add(l.replaceAll(";", ""));
+                if (m.find() && l.startsWith("char * CWE134") && l.endsWith(";") && !l.startsWith("static") && !l.startsWith("extern")) {
+                    mockedFunctionList.add(l.replace("* C", "C").replaceAll(";", ""));
                 }
             }
         }
@@ -229,8 +232,10 @@ public class CreateTestCases {
         String voidGood = "";
         String voidBad = "";
 
-        voidGood = "{if (data < (LLONG_MAX/2)){int64_t result = data * 2;printLongLongLine(result);}else{printLine(\"data value is too large to perform arithmetic safely.\");}}\n";
-        voidBad = "{int64_t result = data * 2;printLongLongLine(result);}\n";
+        // voidGood = "{ va_list args;va_start(args, data);vfprintf(stdout, \"%s\", args);va_end(args); }\n";
+        // voidBad = "{ va_list args;va_start(args, data);vfprintf(stdout, data, args);va_end(args); }\n";
+        voidGood = "{char * data = myStruct.structFirst; goodB2GVaSink(data, data); }\n";
+        voidBad = "{char * data = myStruct.structFirst; badVaSink(data, data); }\n";
 
         for (String string : mockedFunctionList) {
             System.out.println("**** Mock functions: " + string);
@@ -331,7 +336,7 @@ public class CreateTestCases {
             m = findGoodFunction.matcher(l);
             if (m.find()) {
 
-                if (!l.endsWith("()") &&fileName.contains("b.c") || fileName.contains("c.c") || fileName.contains("d.c")
+                if (!l.endsWith("()") && fileName.contains("b.c") || fileName.contains("c.c") || fileName.contains("d.c")
                         || fileName.contains("e.c")) {
                     if (l.contains("B2G") && !l.endsWith(";")) {
                         if (!l.endsWith("()")) {
@@ -343,7 +348,7 @@ public class CreateTestCases {
                             } else if (l.contains("* ")) {
                                 functionParam = l.split("\\*")[1].trim().replace("dataVoidPtr", "data").replaceAll("dataPtr", "data");
                             } else if (l.contains("unsigned ")) {
-                                functionParam = l.split(" ")[3].replace("[]", "");;
+                                functionParam = l.split(" ")[3].replace("[]", "");
                             } else {
                                 functionParam = l.split(" ")[2].replace("[]", "");
                             }
@@ -363,12 +368,14 @@ public class CreateTestCases {
                         break;
                     }
                 } else {
-                    if (l.contains("B2G") && !l.endsWith(";")) {
+                    if (l.contains("B2G") || l.contains("good1") && !l.endsWith(";")) {
                         if (!l.endsWith("()")) {
                             goodFunction = l.split(" ")[2].split("\\(")[0];
 
                             // Condicional para filtrar o parâmetro da função
-                            if (l.startsWith("static ")) {
+                            if (l.contains("unsigned int")) {
+                                functionParam = l.split(" ")[4].replace("[]", "");
+                            } else if (l.startsWith("static ")) {
                                 functionParam = l.split(" ")[3];
                             } else if (l.contains("* ")) {
                                 functionParam = l.split("\\*")[1].trim().replace("dataVoidPtr", "data").replaceAll("dataPtr", "data");
@@ -384,6 +391,14 @@ public class CreateTestCases {
                             functionParam = stringBuilder.toString();
 
                             goodFunction += functionParam + ";//";
+                            goodFunction = "";
+                            
+                            if (l.contains("goodB2G1")) {
+                                goodFunction = "goodB2G1";
+                            } else if (l.contains("goodB2G")){
+                                goodFunction = "goodB2G";
+                            }
+
                         } else {
                             goodFunction = l.split(" ")[2].split("\\(")[0];
                         }

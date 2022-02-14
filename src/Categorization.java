@@ -44,10 +44,10 @@ public class Categorization {
     private boolean findWeaknessFilter;
 
     public static void main(String[] args) throws Exception {
-        cwe = args[0].split("_")[0]; // CWE134_Uncontrolled_Format_String__char_file_fprintf_02.c
+        cwe = args[0].split("_")[0];
         fileName = args[0];
         pathTestedFiles = args[1];
-        // System.out.println(cwe);
+        
         Categorization cat = new Categorization();
         cat.start();
     }

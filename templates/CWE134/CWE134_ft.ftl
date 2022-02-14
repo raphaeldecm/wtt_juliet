@@ -10,25 +10,61 @@
 #include "/home/raphael/DOCFILES/DoctoralFiles/Juliet/C/testcasesupport/io.c"
 
 #define LOGFILE "/tmp/file.txt"
+#define SNPRINTF snprintf
+//Mocked functions
+static void badVaSink(char * data, ...)
+{
+    {
+        va_list args;
+        va_start(args, data);
+        /* POTENTIAL FLAW: Do not specify the format allowing a possible format string vulnerability */
+        vfprintf(stdout, data, args);
+        va_end(args);
+    }
+}
+
+static void goodB2GVaSink(char * data, ...)
+{
+    {
+        va_list args;
+        va_start(args, data);
+        /* FIX: Specify the format disallowing a format string vulnerability */
+        vfprintf(stdout, "%s", args);
+        va_end(args);
+    }
+}
+
+${externVar}
+${mockedFunctions}
+
 int __wrap_globalReturnsTrueOrFalse() 
 {
     //return (rand() % 2);
     return 1;
 }
+
+#define CHAR_ARRAY_SIZE 20
+
+char inputBuffer[CHAR_ARRAY_SIZE] = "";
+
 static void test_juliet_ft(void **state)
 {
     (void)state; //unused variable
 
-    char * data;
-    char dataBuffer[100] = "";
-    data = dataBuffer;
-    size_t dataLen = strlen(data);
-    fgets(data+dataLen, (int)(100-dataLen), stdin);
+    char data[100] = "";
+    
+    scanf("%s\n", &data);
 
-	char *bline;
+    char * str;
+    char strBuffer[100] = "";
+    str = strBuffer;
+
+    strcpy(str, data);
+
+	<#--  char *bline;
     if ((bline = strchr(data, '\n')) != NULL){
         *bline = '\0';
-    }
+    }  -->
 
     FILE *txtFile;
     txtFile = fopen(LOGFILE, "w");
@@ -44,8 +80,7 @@ static void test_juliet_ft(void **state)
         fclose(fileAddress);
     }
 
-    char buf[100];
-
+    char buf[BUFSIZ];
     freopen("/dev/null", "a", stdout);
     setbuf(stdout, buf);
 

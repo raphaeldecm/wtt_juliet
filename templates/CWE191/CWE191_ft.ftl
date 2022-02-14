@@ -11,7 +11,7 @@
 
 #define CHAR_ARRAY_SIZE 20
 
-int inputBuffer;
+char resBuffer[CHAR_ARRAY_SIZE] = "";
 
 //Mocked functions
 ${externVar}
@@ -20,25 +20,25 @@ ${mockedFunctions}
 static void test_juliet_rtc(void **state)
 {
     (void)state; //unused variable
-
-    char data;
-    data = ' ';
-    scanf("%c\n", &data);
     
-    char charHex[CHAR_MAX + 1];
-    sprintf(charHex, "%02x", data * data);
+    int64_t data;
+    data = 0LL;
+    scanf("%lld\n", &data);
+    
+    int64_t result = data * 2;
+    sprintf(resBuffer, "%lld", result);
 
     FILE *inputFile;
     inputFile = fopen("read_ft.txt", "w");
     if (inputFile != NULL){
-        fprintf(inputFile, "%c\n", data);
+        fprintf(inputFile, "%lld\n", data);
         fclose(inputFile);
     }
 
     FILE *fileAddress;
     fileAddress = fopen("log_afl_${type}.txt", "a");
     if (fileAddress != NULL){
-        fprintf(fileAddress, "%c\n", data);
+        fprintf(fileAddress, "%lld\n", data);
         fclose(fileAddress);
     }
 
@@ -57,10 +57,12 @@ static void test_juliet_rtc(void **state)
     {
         *pos = '\0';
     }
-    if(strcmp(buf, "data value is too large to perform arithmetic safely.") == 0){
-        assert_string_equal(buf, "data value is too large to perform arithmetic safely.");
+    if(strcmp(buf, "data value is too small to perform multiplication.") == 0){
+        assert_string_equal(buf, "data value is too small to perform multiplication.");
+    } else if(data < 0){
+        assert_true(atoi(buf) < 0);
     } else {
-        assert_string_equal(buf, charHex);
+        assert_true(1);
     }
 
 }

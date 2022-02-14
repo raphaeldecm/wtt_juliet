@@ -7,42 +7,48 @@
 #include <cmocka.h>
 
 #include "${pathDataSet}${fileName}"
-#include "/home/raphael/DOCFILES/DoctoralFiles/Juliet/C/testcasesupport/io.c"
+#include "/home/raphael/DOCFILES/DoctoralFiles/Juliet/C1.2/testcasesupport/io.c"
 
-#define LOGFILE "/tmp/file.txt"
-int __wrap_globalReturnsTrueOrFalse() 
+//Mocked functions
+${externVar}
+${mockedFunctions}
+
+#define CHAR_ARRAY_SIZE 20
+
+char inputBuffer[CHAR_ARRAY_SIZE] = "";
+
+char __wrap_fgets(char *__restrict __s, int __n, FILE *__restrict __stream)
 {
-    //return (rand() % 2);
-    return 1;
+    strcpy(__s, inputBuffer);
+    return __s;
 }
+
 static void test_juliet_rtc(void **state)
 {
     (void)state; //unused variable
-
-    char *str = "%xfixedstring";
-
-    FILE *txtFile;
-    txtFile = fopen(LOGFILE, "w");
-    if (txtFile != NULL){
-        fprintf(txtFile, "%s", str);
-        fclose(txtFile);
-    }
-
+    
     char buf[BUFSIZ];
-
     freopen("/dev/null", "a", stdout);
     setbuf(stdout, buf);
-
-    ${testedFunction}();
     
+    ${testedFunction}();
+
     freopen("/dev/tty", "a", stdout);
     
     char *pos;
-    if ((pos = strchr(buf, '\n')) != NULL){
+    if ((pos = strchr(buf, '\n')) != NULL)
+    {
         *pos = '\0';
     }
     
-    assert_string_equal(buf, str);
+    if(strcmp(buf, "intOne == 5") == 0){
+        assert_string_equal(buf, "intOne == 5");
+    //} else if(data < 0){
+        //assert_true(atoi(buf) < 0);
+    } else {
+        assert_true(0);
+    }
+
 }
 
 int setup(void **state){
