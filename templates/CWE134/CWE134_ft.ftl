@@ -7,7 +7,7 @@
 #include <cmocka.h>
 
 #include "${pathDataSet}${fileName}"
-#include "/home/raphael/DOCFILES/DoctoralFiles/Juliet/C/testcasesupport/io.c"
+#include "/home/raphael/DOCFILES/DoctoralFiles/Juliet/C1.2/testcasesupport/io.c"
 
 #define LOGFILE "/tmp/file.txt"
 #define SNPRINTF snprintf
@@ -51,12 +51,12 @@ static void test_juliet_ft(void **state)
 {
     (void)state; //unused variable
 
-    char data[100] = "";
+    char data[CHAR_MAX] = "";
     
     scanf("%s\n", &data);
 
     char * str;
-    char strBuffer[100] = "";
+    char strBuffer[CHAR_MAX] = "";
     str = strBuffer;
 
     strcpy(str, data);

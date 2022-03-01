@@ -7,7 +7,7 @@
 #include <cmocka.h>
 
 #include "${pathDataSet}${fileName}"
-#include "/home/raphael/DOCFILES/DoctoralFiles/Juliet/C/testcasesupport/io.c"
+#include "/home/raphael/DOCFILES/DoctoralFiles/Juliet/C1.2/testcasesupport/io.c"
 
 #define LOGFILE "/tmp/file.txt"
 #define SNPRINTF snprintf
@@ -54,7 +54,7 @@ static void test_juliet_rtc(void **state)
     char *str = "%xfixedstring";
 
     char * data;
-    char dataBuffer[100] = "";
+    char dataBuffer[CHAR_MAX] = "";
     data = dataBuffer;
 
     strcpy(data, str);
